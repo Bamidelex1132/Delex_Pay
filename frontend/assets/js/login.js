@@ -26,7 +26,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     localStorage.setItem("token", data.token);
 
     const user = data.user;
-    alert("DEBUG USER OBJECT: " + JSON.stringify(user, null, 2));
+    
 
     // ✅ Set verification status
     localStorage.setItem("isVerified", user.isVerified ? "true" : "false");

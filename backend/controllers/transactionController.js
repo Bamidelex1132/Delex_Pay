@@ -5,7 +5,8 @@ const sendEmail = require('../utils/sendEmail');
 const dotenv = require('dotenv');
 dotenv.config();
 
-
+const MARKUP_RATE = 0.05; 
+const FEE_RATE = 0.05;
 
 const createTransaction = async (req, res) => {
   try {
@@ -139,90 +140,85 @@ const submitTransaction = async (req, res) => {
   try {
     const userId = req.user.id;
 
-    if (!req.file) {
+    if (!req.file || !(req.file.location || req.file.url)) {
       return res.status(400).json({ message: 'Proof of payment is required' });
     }
 
-    const { type, amount, currency, description } = req.body;
+    let { type, amount, currency, description } = req.body;
+    amount = parseFloat(amount);
 
-    if (!type || !amount) {
-      return res.status(400).json({ message: 'Transaction type and amount are required' });
+    if (!type || !amount || !currency) {
+      return res.status(400).json({ message: 'Transaction type, amount, and currency are required' });
     }
 
-        const amountNum = parseFloat(amount);
-    const feeRate = 0.05; // 5%
-    const fee = parseFloat((amountNum * feeRate).toFixed(2));
-    const total = parseFloat((amountNum + fee).toFixed(2));
+    // Fetch live price from CoinGecko
+    const response = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${currency.toLowerCase()}&vs_currencies=ngn`
+    );
+    const livePrice = response.data[currency.toLowerCase()]?.ngn;
 
+    if (!livePrice) {
+      return res.status(400).json({ message: 'Unable to fetch live price for this currency' });
+    }
 
-     const user = await User.findById(userId);
+    // Calculate final price per coin
+    let finalPricePerCoin;
+    if (type === 'buy') {
+      finalPricePerCoin = livePrice * (1 + MARKUP_RATE);
+    } else if (type === 'sell') {
+      finalPricePerCoin = livePrice * (1 - FEE_RATE);
+    } else {
+      return res.status(400).json({ message: 'Invalid transaction type' });
+    }
+
+    const totalValueNGN = amount * finalPricePerCoin;
+
+    const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
+    const proofUrl = req.file.location || req.file.url;
+
     const newTransaction = new Transaction({
       user: userId,
       type,
-      amount: amountNum,
-      fee,
-      currency: currency || 'NGN',
+      amount,
+      pricePerCoin: finalPricePerCoin,
+      totalValue: totalValueNGN,
+      currency: currency.toUpperCase(),
       description,
       status: 'submitted',
-      proof: `/uploads/proofs/${req.file.filename}` 
+      proof: proofUrl,
     });
 
     await newTransaction.save();
 
-        user.frozenBalance += amountNum;
-        await user.save();
+    // Freeze user's balance
+    user.frozenBalance += totalValueNGN;
+    await user.save();
 
+    // Send confirmation email
+    await sendEmail(
+      user.email,
+      `${type.charAt(0).toUpperCase() + type.slice(1)} Transaction Submitted - Delex Pay`,
+      `
+        <p>Hi ${user.firstName || user.email},</p>
+        <p>Your ${type} transaction for ${amount} ${currency.toUpperCase()} has been submitted.</p>
+        <p>Price per coin: ₦${finalPricePerCoin.toFixed(2)}</p>
+        <p>Total value: ₦${totalValueNGN.toFixed(2)}</p>
+        <p>Status: Submitted</p>
+      `
+    );
 
-         await sendEmail(
-  user.email,
-  'Deposit Submitted - Delex Pay',
-  `
-  <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #ffffff; padding: 30px; color: #333;">
-    <h2 style="color: #004aad; text-align: center; margin-bottom: 25px; font-weight: 700;">Delex Pay - Deposit Submitted</h2>
-    <p style="font-size: 16px; line-height: 1.5;">Hi <strong>${user.firstName || user.email}</strong>,</p>
-    <p style="font-size: 16px; line-height: 1.5; margin-top: 10px;">We have successfully received your deposit submission. Our team will review and verify it shortly.</p>
-    <table style="width: 100%; border-collapse: collapse; margin: 25px 0;">
-      <tbody>
-        <tr>
-          <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: 600;">Amount:</td>
-          <td style="padding: 8px 12px; border: 1px solid #ddd;">${amountNum.toFixed(2)} ${currency}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: 600;">Fee:</td>
-          <td style="padding: 8px 12px; border: 1px solid #ddd;">${fee.toFixed(2)} ${currency}</td>
-        </tr>
-        <tr>
-          <td style="padding: 8px 12px; border: 1px solid #ddd; font-weight: 600;">Total:</td>
-          <td style="padding: 8px 12px; border: 1px solid #ddd;">${total.toFixed(2)} ${currency}</td>
-        </tr>
-      </tbody>
-    </table>
-    <p style="font-size: 16px; line-height: 1.5;">Thank you for choosing Delex Pay.</p>
-    <p style="margin-top: 30px; font-size: 14px; color: #888;">Delex Pay Team</p>
-    <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
-    <p style="font-size: 12px; color: #999; text-align: center;">This is an automated message. Please do not reply.</p>
-  </div>
-  `
-        );
-
-    const adminEmails = ['toheebdikko@gmail.com', 'toheebdikko@outlook.com']; 
-    for (const adminEmail of adminEmails) {
-      await sendEmail(
-        adminEmail,
-        'New Deposit Submitted',
-        `<p>User ${user.email} submitted a deposit of ${amountNum} ${currency}. Please review.</p>`
-      );
-    }
-
-    return res.status(201).json({ message: 'Transaction submitted successfully', transaction: newTransaction });
+    res.status(201).json({
+      message: 'Transaction submitted successfully',
+      transaction: newTransaction
+    });
 
   } catch (error) {
     console.error(error);
-    return res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error' });
   }
 };
 

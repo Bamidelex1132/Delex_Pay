@@ -1,24 +1,47 @@
+// controllers/sellController.js
 const Transaction = require('../models/Transaction');
 const User = require('../models/User');
 const CoinConfig = require('../models/CoinConfig');
 const nodemailer = require('nodemailer');
 
-// Setup mail transporter (adjust with your env)
 const transporter = nodemailer.createTransport({
-  service: 'gmail', // or your email service
+  service: 'gmail',
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS,
   },
 });
 
+const discountRate = 0.95; // 5% discount
+
+// API to preview payout before submit
+const calculatePayout = async (req, res) => {
+  try {
+    const { coinSymbol, amount } = req.body;
+
+    if (!coinSymbol || !amount || amount <= 0) {
+      return res.status(400).json({ message: 'Invalid coin or amount.' });
+    }
+
+    const coin = await CoinConfig.findOne({ symbol: coinSymbol, status: 'active' });
+    if (!coin) return res.status(400).json({ message: 'Coin not found.' });
+
+    const payout = Math.round(amount * coin.rateToNaira * discountRate);
+
+    res.json({ payout });
+  } catch (error) {
+    console.error('Calculate payout error:', error);
+    res.status(500).json({ message: 'Server error calculating payout.' });
+  }
+};
+
 const submitSell = async (req, res) => {
   try {
-    const userId = req.user._id; // from auth middleware
-    const { coinSymbol, network, amount, payoutDestination, coinSendFrom, proof, confirmationChecked } = req.body;
+    const userId = req.user._id;
+    const { coinSymbol, network, amount, payoutDestination, coinSendFrom, confirmationChecked } = req.body;
 
     if (!coinSymbol || !amount || !payoutDestination || !coinSendFrom || !confirmationChecked) {
-      return res.status(400).json({ message: 'Please fill all required fields and confirm you sent tokens.' });
+      return res.status(400).json({ message: 'Please fill all required fields and confirm sending tokens.' });
     }
 
     const user = await User.findById(userId);
@@ -27,9 +50,7 @@ const submitSell = async (req, res) => {
     const coin = await CoinConfig.findOne({ symbol: coinSymbol, status: 'active' });
     if (!coin) return res.status(400).json({ message: 'Coin not available for selling.' });
 
-    // Determine send-to wallet address or email based on send source & network
     let sendToAddressOrEmail = '';
-
     if (coinSendFrom === 'wallet') {
       if (coin.hasNetwork && network) {
         const net = coin.networks.find(n => n.name.toLowerCase() === network.toLowerCase());
@@ -58,10 +79,7 @@ const submitSell = async (req, res) => {
       return res.status(400).json({ message: 'Invalid coin send source selected.' });
     }
 
-    // Calculate payout in Naira with discount (or markup)
-    const discountRate = 0.95; // 5% discount
-    const basePayout = amount * coin.rateToNaira;
-    const payout = Math.round(basePayout * discountRate);
+    const payout = Math.round(amount * coin.rateToNaira * discountRate);
 
     if (user.balance < payout) {
       return res.status(400).json({ message: 'Insufficient balance to cover payout.' });
@@ -71,7 +89,6 @@ const submitSell = async (req, res) => {
     user.frozenBalance = (user.frozenBalance || 0) + payout;
     await user.save();
 
-    // Save transaction
     const transaction = new Transaction({
       user: userId,
       type: 'sell',
@@ -79,7 +96,6 @@ const submitSell = async (req, res) => {
       currency: 'NGN',
       status: 'submitted',
       description: `Sell ${amount} ${coinSymbol} via ${payoutDestination}`,
-      proof: proof || '',
       coinSymbol,
       network: network || null,
       payoutDestination,
@@ -89,7 +105,7 @@ const submitSell = async (req, res) => {
 
     await transaction.save();
 
-    // Emails
+    // Send emails (user + admin)
     const userMailOptions = {
       from: process.env.EMAIL_USER,
       to: user.email,
@@ -120,5 +136,6 @@ const submitSell = async (req, res) => {
 };
 
 module.exports = {
+  calculatePayout,
   submitSell,
 };

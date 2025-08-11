@@ -8,7 +8,7 @@ const { authenticateUser } = require('../middleware/authMiddleware');
 const uploadReceipt = require("../middleware/uploadReceipt");
 const uploadProof = require('../middleware/uploadProof');
 const uploadProfile = require('../middleware/uploadMiddleware');
-const CoinConfig = require('../models/CoinConfig');
+const coinConfig = require('../models/coinConfig');
 // My Controllers
 const transactionController = require('../controllers/transactionController');
 const { logoutUser } = require('../controllers/authController');

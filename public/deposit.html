@@ -1,1 +1,117 @@
 
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Deposit - Delex Pay</title>
+  <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
+  <style>
+    body{background:#0e0f1a;color:#fff;font-family:Inter,Arial;padding:2rem;display:flex;justify-content:center;align-items:center;min-height:100vh}
+    .card{background:#1a1c2e;padding:2rem;border-radius:12px;width:360px}
+    label{display:block;margin-top:10px;color:#cbd5e1}
+    input,select,button{width:100%;padding:10px;border-radius:8px;border:none;background:#2b2d42;color:#fff}
+    button{background:#3b82f6;margin-top:12px;cursor:pointer}
+    .error{color:#f87171;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2 style="text-align:center;color:#3b82f6">Deposit Funds</h2>
+
+    <label for="amount">Amount</label>
+    <input id="amount" type="number" placeholder="Enter amount" min="0" />
+
+    <label for="currency">Currency</label>
+    <select id="currency"><option>Loading...</option></select>
+
+    <label for="method">Payment Method</label>
+    <select id="method"><option value="bank">Bank Transfer</option></select>
+
+    <div id="min-note" style="color:#cbd5e1;margin-top:8px"></div>
+    <div id="err" class="error"></div>
+
+    <button id="continueBtn">Continue</button>
+  </div>
+
+<script>
+const apiBase = "https://delex-pay.onrender.com";
+
+async function loadOptions(){
+  try {
+    const res = await fetch(`${apiBase}/api/deposit/options`);
+    if (!res.ok) throw new Error('Failed to load options');
+    const data = await res.json();
+
+    const currencySelect = document.getElementById('currency');
+    currencySelect.innerHTML = '';
+    data.currencies.forEach(c => {
+      const opt = document.createElement('option');
+      opt.value = c.code;
+      opt.textContent = `${c.name} (${c.symbol})`;
+      currencySelect.appendChild(opt);
+    });
+
+    // methods (we only support bank transfer for now)
+    const methodSelect = document.getElementById('method');
+    methodSelect.innerHTML = '';
+    data.methods.forEach(m => {
+      const opt = document.createElement('option');
+      opt.value = m.code;
+      opt.textContent = m.name;
+      if (m.enabled) methodSelect.appendChild(opt);
+    });
+
+    // show min-note for selected currency
+    showMin(currencySelect.value);
+    currencySelect.addEventListener('change', (e) => showMin(e.target.value));
+  } catch (err) {
+    console.error(err);
+    document.getElementById('err').textContent = 'Failed to load deposit options';
+  }
+}
+
+async function showMin(code){
+  try {
+    const res = await fetch(`${apiBase}/api/deposit/${code}`);
+    if (!res.ok) { document.getElementById('min-note').textContent = ''; return; }
+    const info = await res.json();
+    document.getElementById('min-note').textContent = `Minimum: ${info.minAmount} ${info.currency}`;
+    document.getElementById('amount').min = info.minAmount || 0;
+  } catch (err) {
+    document.getElementById('min-note').textContent = '';
+  }
+}
+
+document.getElementById('continueBtn').addEventListener('click', (e) => {
+  e.preventDefault();
+  const amount = parseFloat(document.getElementById('amount').value);
+  const currency = document.getElementById('currency').value;
+  const method = document.getElementById('method').value;
+
+  const errEl = document.getElementById('err');
+  errEl.textContent = '';
+
+  if (!amount || !currency || !method) {
+    errEl.textContent = 'Please fill all fields';
+    return;
+  }
+
+  const min = parseFloat(document.getElementById('amount').min || 0);
+  if (amount < min) {
+    errEl.textContent = `Minimum amount is ${min} ${currency}`;
+    return;
+  }
+
+  // store to localStorage and go to bank transfer page
+  localStorage.setItem('depositAmount', amount);
+  localStorage.setItem('depositCurrency', currency);
+  localStorage.setItem('depositMethod', method);
+  localStorage.setItem('depositTs', Date.now());
+
+  // redirect
+  window.location.href = 'transfer.html';
+});
+
+loadOptions();
+

@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   try {
-    const response = await fetch(`http://localhost:5000/api/transactions/${transactionId}`, {
+    const response = await fetch(`https://delex-pay.onrender.com/api/transactions/${transactionId}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }

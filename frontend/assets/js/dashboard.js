@@ -1,6 +1,6 @@
 // ======= INITIAL SETUP =======
 const token = localStorage.getItem("token");
-const apiBase = "http://localhost:5000";
+const apiBase = "https://delex-pay.onrender.com";
 
 
 // ======= ON DOM LOAD =======
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
 // ======= DASHBOARD =======
 async function loadDashboard() {
   try {
-    const res = await fetch("http://localhost:5000/api/user/dashboard", {
+    const res = await fetch("https://delex-pay.onrender.com/api/user/dashboard", {
       headers: { Authorization: `Bearer ${token}` },
     });
 
@@ -89,7 +89,7 @@ let transactionsData = [];
 
 async function loadTransactions() {
   try {
-    const res = await fetch("http://localhost:5000/api/user/dashboard", {
+    const res = await fetch("https://delex-pay.onrender.com/api/user/dashboard", {
       headers: { Authorization: `Bearer ${token}` },
     });
     const data = await res.json();
@@ -271,7 +271,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
   if (!token) return (window.location.href = "/login.html");
 
   try {
-    const res = await fetch("http://localhost:5000/api/auth/logout", {
+    const res = await fetch("https://delex-pay.onrender.com/api/auth/logout", {
       method: "POST",
       headers: { Authorization: `Bearer ${token}` },
     });

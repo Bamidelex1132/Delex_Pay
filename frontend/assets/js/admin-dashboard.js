@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const profilePic = document.getElementById("adminProfilePic");
 
   // Fetch admin data
-  fetch("http://localhost:5000/api/admin/data", {
+  fetch("https://delex-pay.onrender.com/api/admin/data", {
     headers: {
       Authorization: `Bearer ${token}`
     }
@@ -26,7 +26,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Profile image
       if (admin.profileImage) {
-        profilePic.src = `http://localhost:5000/uploads/${admin.profileImage}`;
+        profilePic.src = `https://delex-pay.onrender.com/uploads/${admin.profileImage}`;
       } else {
         profilePic.src = "/assets/img/default-profile.png";
       }

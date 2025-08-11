@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     loader.style.display = "block";
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      const response = await fetch("https://delex-pay.onrender.com/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

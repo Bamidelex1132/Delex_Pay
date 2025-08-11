@@ -16,7 +16,7 @@ if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   throw new Error('EMAIL_USER and EMAIL_PASS environment variables must be set');
 }
 const JWT_SECRET = process.env.JWT_SECRET;
-const BASE_URL = process.env.BASE_URL || 'http://localhost:5000';
+const BASE_URL = process.env.BASE_URL || 'https://delex-pay.onrender.com';
 
 const register = async (req, res) => {
   try {
@@ -280,7 +280,7 @@ const forgotPassword = async (req, res) => {
     user.resetTokenExpires = Date.now() + 3600000;
     await user.save();
 
-    const resetUrl = `http://localhost:5000/reset-password.html?token=${token}`;
+    const resetUrl = `https://delex-pay.onrender.com/reset-password.html?token=${token}`;
 
     const mailOptions = {
   to: user.email,

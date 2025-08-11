@@ -261,7 +261,7 @@
         return;
       }
 
-      fetch("http://localhost:5000/api/auth/verify-code", { 
+      fetch("https://delex-pay.onrender.com/api/auth/verify-code", { 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ code, email })
@@ -288,7 +288,7 @@
         return;
       }
 
-      fetch("http://localhost:5000/api/auth/resend-code", {
+      fetch("https://delex-pay.onrender.com/api/auth/resend-code", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email })

@@ -36,9 +36,7 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     if (!user.isVerified) {
       return window.location.href = "verify-code.html";
     }
-
-// ✅ Redirect verified users based on email
-if (user.email === "dikkotoheeb@gmail.com") {
+if (user.role === "admin" || user.isAdmin === true) {
   window.location.href = "admin-dashboard.html";
 } else {
   window.location.href = "user-dashboard.html";

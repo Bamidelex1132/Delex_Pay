@@ -1,23 +1,28 @@
+// middleware/uploadProof.js
 const multer = require('multer');
-const path = require('path');
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinary = require('cloudinary').v2;
 
-const storage = multer.diskStorage({
-  destination: function (req, file, cb) {
-    cb(null, 'uploads/proofs');
-  },
-  filename: function (req, file, cb) {
-    const uniqueName = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, uniqueName + path.extname(file.originalname));
+// 1️⃣ Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET
+});
+
+// 2️⃣ Configure Multer Storage with Cloudinary
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'deposit_proofs', // Folder in Cloudinary
+    allowed_formats: ['jpg', 'jpeg', 'png', 'pdf'],
+    public_id: (req, file) => {
+      return `${Date.now()}-${file.originalname.split('.')[0]}`;
+    }
   }
 });
 
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-  if (allowedTypes.includes(file.mimetype)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Invalid file type. Only JPEG, PNG, and PDF are allowed.'), false);
-  }
-};
+// 3️⃣ Create Multer upload middleware
+const uploadProof = multer({ storage });
 
-module.exports = multer({ storage, fileFilter });
+module.exports = uploadProof;

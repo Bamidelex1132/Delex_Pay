@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
       localStorage.setItem("isVerified", "false");
 
       alert("🎉 Registration successful! Please verify your email.");
-      window.location.href = "/frontend/verify-code.html";
+      window.location.href = "verify-code.html";
 
     } catch (err) {
       loader.style.display = "none";

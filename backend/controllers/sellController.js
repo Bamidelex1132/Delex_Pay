@@ -54,16 +54,30 @@ const calculatePayout = async (req, res) => {
 };
 
 // Submit sell order
+
 const submitSell = async (req, res) => {
   try {
     const userId = req.user._id;
     let { coinSymbol, network, amount, payoutDestination, coinSendFrom, confirmationChecked } = req.body;
 
-    if (!coinSymbol || !amount || !payoutDestination || !coinSendFrom || !confirmationChecked) {
-      return res.status(400).json({ message: 'Please fill all required fields and confirm sending tokens.' });
+    // Validate confirmation checkbox
+    const confirmed = confirmationChecked === true || confirmationChecked === 'true' || confirmationChecked === 'on';
+    if (!confirmed) {
+      return res.status(400).json({ message: 'Please confirm you have sent the tokens.' });
     }
 
-    // Validate proof of payment uploaded on cloud storage
+    // Validate and parse amount
+    amount = parseFloat(amount);
+    if (isNaN(amount) || amount <= 0) {
+      return res.status(400).json({ message: 'Invalid amount.' });
+    }
+
+    // Check required fields
+    if (!coinSymbol || !payoutDestination || !coinSendFrom) {
+      return res.status(400).json({ message: 'Please fill all required fields.' });
+    }
+
+    // Check proof file uploaded
     if (!req.file || !(req.file.location || req.file.url)) {
       return res.status(400).json({ message: 'Proof of payment is required.' });
     }
@@ -80,6 +94,7 @@ const submitSell = async (req, res) => {
     const livePrice = (await getLivePrice(coinSymbol)) || coin.rateToNaira;
     if (!livePrice) return res.status(400).json({ message: `Unable to fetch price for ${coinSymbol}.` });
 
+    // Calculate payout with discount
     const payout = Math.round(amount * livePrice * discountRate);
 
     // Freeze NGN balance
@@ -91,12 +106,20 @@ const submitSell = async (req, res) => {
     user.frozenBalance = (user.frozenBalance || 0) + payout;
     await user.save();
 
+    // Validate network if needed
+    if (coin.hasNetwork) {
+      if (!network) {
+        return res.status(400).json({ message: 'Network is required for this coin.' });
+      }
+      const net = coin.networks.find(n => n.name.toLowerCase() === network.toLowerCase());
+      if (!net) return res.status(400).json({ message: 'Invalid network selected for the coin.' });
+    }
+
     // Determine payout send address/email
     let sendToAddressOrEmail = '';
     if (coinSendFrom === 'wallet') {
       if (coin.hasNetwork && network) {
         const net = coin.networks.find(n => n.name.toLowerCase() === network.toLowerCase());
-        if (!net) return res.status(400).json({ message: 'Invalid network selected for the coin.' });
         sendToAddressOrEmail = net.walletAddress;
       } else {
         sendToAddressOrEmail = user.walletAddress || '';
@@ -150,14 +173,14 @@ const submitSell = async (req, res) => {
     await transporter.sendMail(userMailOptions);
     await transporter.sendMail(adminMailOptions);
 
-    res.status(200).json({
+    return res.status(200).json({
       message: 'Sell order submitted successfully and pending approval.',
       transaction,
       sendToAddressOrEmail,
     });
   } catch (error) {
     console.error('Sell order error:', error);
-    res.status(500).json({ message: 'Server error while submitting sell order.' });
+    return res.status(500).json({ message: 'Server error while submitting sell order.' });
   }
 };
 

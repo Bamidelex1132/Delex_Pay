@@ -266,8 +266,10 @@ function showToast(message, type = "info") {
   }, 4000);
 }
 
-// ======= LOGOUT =======
+
+
 document.getElementById("logoutBtn").addEventListener("click", async () => {
+  const token = localStorage.getItem("authToken");
   if (!token) return (window.location.href = "/login.html");
 
   try {
@@ -279,7 +281,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     if (res.ok) {
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = "login.html";
+      window.location.href = "/login.html";
     } else {
       const data = await res.json();
       alert("Logout failed: " + data.message);

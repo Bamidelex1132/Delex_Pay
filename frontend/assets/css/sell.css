@@ -1,0 +1,170 @@
+/* sell.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter&display=swap');
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background: #0e0f1a;
+  color: #e0e6f3;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 2rem 1rem;
+}
+
+.container {
+  background: #1a1c2e;
+  padding: 2rem 2.5rem;
+  border-radius: 12px;
+  max-width: 480px;
+  width: 100%;
+  box-shadow: 0 0 25px rgba(59, 130, 246, 0.4);
+  animation: fadeIn 0.6s ease forwards;
+}
+
+h1 {
+  font-weight: 700;
+  font-size: 1.8rem;
+  margin-bottom: 1.5rem;
+  color: #3b82f6;
+  text-align: center;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+  color: #a0aec0;
+}
+
+select,
+input[type="number"],
+input[type="text"],
+input[type="file"] {
+  background: #111322;
+  border: 1.5px solid #3b82f6;
+  border-radius: 6px;
+  color: #e0e6f3;
+  padding: 0.6rem 0.9rem;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+  outline-offset: 2px;
+}
+
+select:focus,
+input[type="number"]:focus,
+input[type="text"]:focus,
+input[type="file"]:focus {
+  border-color: #60a5fa;
+  outline: none;
+}
+
+select option {
+  background: #1a1c2e;
+  color: #e0e6f3;
+}
+
+.info-text {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin-top: -0.8rem;
+  margin-bottom: 0.8rem;
+}
+
+.info-box {
+  background: #111322;
+  border: 1px solid #3b82f6;
+  border-radius: 6px;
+  padding: 0.6rem 1rem;
+  color: #cbd5e1;
+  font-size: 0.95rem;
+  min-height: 38px;
+  user-select: text;
+}
+
+button[type="submit"] {
+  background: #3b82f6;
+  color: #f9fafb;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.6);
+}
+
+button[type="submit"]:hover,
+button[type="submit"]:focus {
+  background: #60a5fa;
+  outline: none;
+  box-shadow: 0 6px 18px rgba(96, 165, 250, 0.8);
+}
+.info-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  margin-bottom: 0.3rem;
+  color: #a0aec0;
+  user-select: none; /* optional, prevents text selection */
+}
+
+/* Popup alert */
+
+#popup-alert {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background-color: #1a1c2e;
+  color: #3b82f6;
+  padding: 1rem 1.5rem;
+  border-left: 5px solid #3b82f6;
+  border-radius: 10px;
+  box-shadow: 0 0 15px rgba(59, 130, 246, 0.7);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+  z-index: 9999;
+}
+
+#popup-alert.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Responsive */
+
+@media (max-width: 520px) {
+  .container {
+    padding: 1.5rem 1.5rem;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* Animations */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

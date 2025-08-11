@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Bank Transfer - Delex Pay</title>
+    <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
+  <style>
+    body {
+      background: #0e0f1a;
+      color: #fff;
+      font-family: Inter, Arial, sans-serif;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+    }
+
+    .card {
+      width: 420px;
+      background: #1a1c2e;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+    }
+
+    h2 {
+      color: #3b82f6;
+      text-align: center;
+      font-weight: 700;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin-bottom: 20px;
+      letter-spacing: 0.05em;
+    }
+
+    .row {
+      background: #1a1a3a;
+      padding: 16px 20px;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      box-shadow: 0 4px 8px rgba(59, 130, 246, 0.2);
+      transition: background 0.3s ease;
+      display: flex;
+      justify-content: space-between; /* space between static & dynamic */
+      align-items: center;
+      user-select: text;
+    }
+
+    .row:hover {
+      background: #2a2a5a;
+    }
+
+    label {
+      display: block;
+      margin: 8px 0 6px 0;
+      color: #cbd5e1;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.03em;
+      user-select: none;
+    }
+
+    /* Left static text */
+    .static-text {
+      font-weight: 600;
+      color: #cbd5e1;
+      flex: 1;
+    }
+
+    /* Right dynamic text */
+    .dynamic-text {
+      flex: 1;
+      text-align: right;
+      font-weight: 700;
+      color: #fff;
+      user-select: text;
+    }
+
+    .proof-upload-box {
+      background: #2b2d42;
+      border: 2px dashed #3b82f6;
+      border-radius: 8px;
+      padding: 30px;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      transition: border-color 0.3s;
+      color: #cbd5e1;
+      margin-bottom: 12px;
+    }
+
+    .proof-upload-box:hover {
+      border-color: #60a5fa;
+    }
+
+    .proof-upload-box input[type=file] {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      cursor: pointer;
+    }
+
+    img#proofPreview {
+      max-width: 100%;  
+      width: 250px;     
+      height: auto;     
+      margin-top: 10px;
+      display: none;
+      border-radius: 6px;
+      object-fit: contain; 
+      box-shadow: 0 0 8px rgba(59, 130, 246, 0.5); 
+    }
+
+
+    button {
+      width: 100%;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: #3b82f6;
+      color: #fff;
+      margin-top: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .proof-upload-box {
+      border: 2px dashed #ccc;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+      cursor: pointer;
+      background: #1a1a1a;
+      color: #fff;
+      max-width: 300px; 
+      margin: 0 auto;
+    }
+
+    img#proofPreview:hover {
+      cursor: pointer;
+      transform: scale(1.05);
+      transition: transform 0.3s ease;
+    }
+
+    button:disabled {
+      background: #444;
+      cursor: not-allowed;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    .modal {
+      background: #1a1c2e;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 350px;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+      color: #fff;
+    }
+
+    .modal h3 {
+      margin-bottom: 20px;
+      color: #3b82f6;
+    }
+
+    .modal button {
+      width: auto;
+      padding: 8px 20px;
+      font-size: 1rem;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>Bank Transfer</h2>
+
+    <div class="row" id="bankInfo">
+      <div class="static-text">Bank:</div>
+      <div class="dynamic-text" id="bank-name">Loading...</div>
+    </div>
+    <div class="row">
+      <div class="static-text">Account Name:</div>
+      <div class="dynamic-text" id="account-name">Loading...</div>
+    </div>
+    <div class="row">
+      <div class="static-text">Account Number:</div>
+      <div class="dynamic-text">
+        <span id="account-number">Loading...</span>
+        <button class="copy-btn" id="copyAccountBtn" title="Copy account number" style="margin-left: 10px; padding: 3px 7px; font-size: 0.8rem; border-radius: 6px; border:none; background:#2563eb; color:#fff; cursor:pointer;">Copy</button>
+      </div>
+    </div>
+    <div class="row" id="note">
+      <div class="static-text">Instructions:</div>
+      <div class="dynamic-text" id="instructions">⚠️ Note: For Naira deposits, please ensure your bank transfer includes your full email address to avoid delays.</div>
+    </div>
+
+    <div class="row" id="summary">
+      <div class="static-text">Amount:</div>
+      <div class="dynamic-text" id="amountVal">0</div>
+    </div>
+    <div class="row">
+      <div class="static-text">Fee:</div>
+      <div class="dynamic-text" id="feeVal">0</div>
+    </div>
+    <div class="row">
+      <div class="static-text">Total:</div>
+      <div class="dynamic-text" id="totalVal">0</div>
+    </div>
+
+    <label for="proof">Upload proof (image/pdf)</label>
+    <div class="proof-upload-box" id="proofUploadBox">
+      <p id="proofText">Click here or drag & drop proof</p>
+      <img id="proofPreview" src="" alt="Proof Preview" />
+      <input type="file" id="proof" name="proof" accept="image/*,application/pdf" />
+    </div>
+
+    <button id="submitBtn" disabled>Submit deposit</button>
+    <div id="msg" style="margin-top:10px; color:#f87171;"></div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h3>Deposit Submitted</h3>
+      <p>Your deposit has been submitted successfully. Admin will verify it shortly.</p>
+      <button id="modalCloseBtn">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const apiBase = "http://localhost:5000";
+    const amount = parseFloat(localStorage.getItem('depositAmount') || 0);
+    const currency = localStorage.getItem('depositCurrency') || 'NGN';
+    const method = localStorage.getItem('depositMethod') || 'bank';
+
+    const bankNameEl = document.getElementById('bank-name');
+    const accountNameEl = document.getElementById('account-name');
+    const accountNumberEl = document.getElementById('account-number');
+    const instructionsEl = document.getElementById('instructions');
+
+    const amountVal = document.getElementById('amountVal');
+    const feeVal = document.getElementById('feeVal');
+    const totalVal = document.getElementById('totalVal');
+
+    const proofInput = document.getElementById('proof');
+    const proofUploadBox = document.getElementById('proofUploadBox');
+    const proofPreview = document.getElementById('proofPreview');
+    const proofText = document.getElementById('proofText');
+
+    const submitBtn = document.getElementById('submitBtn');
+    const msgEl = document.getElementById('msg');
+
+    const modalOverlay = document.getElementById('modalOverlay');
+    const modalCloseBtn = document.getElementById('modalCloseBtn');
+
+    // Copy account number to clipboard
+    document.getElementById('copyAccountBtn').addEventListener('click', () => {
+      const textToCopy = accountNumberEl.textContent;
+      if (!textToCopy || textToCopy === 'Loading...') return;
+      navigator.clipboard.writeText(textToCopy).then(() => {
+        alert('Account number copied to clipboard');
+      }).catch(() => {
+        alert('Failed to copy account number');
+      });
+    });
+
+    // Click on proof box opens file selector
+    proofUploadBox.addEventListener('click', () => proofInput.click());
+
+    // When file is chosen, preview it and toggle text
+    proofInput.addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (!file) {
+        proofPreview.style.display = 'none';
+        proofText.style.display = 'block';
+        submitBtn.disabled = true;
+        return;
+      }
+
+      if (file.type.startsWith('image/')) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          proofPreview.src = e.target.result;
+          proofPreview.style.display = 'block';
+          proofText.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      } else {
+        proofPreview.style.display = 'none';
+        proofText.style.display = 'none';
+      }
+
+      submitBtn.disabled = false;
+    });
+
+    async function loadDepositInfo() {
+      try {
+        const res = await fetch(`${apiBase}/api/deposit/${currency}`);
+        if (!res.ok) throw new Error('Failed to load deposit info');
+        const info = await res.json();
+
+        bankNameEl.textContent = info.bankName;
+        accountNameEl.textContent = info.accountName;
+        accountNumberEl.textContent = info.accountNumber;
+        instructionsEl.textContent = info.instructions || '-';
+
+        const feeRate = amount < info.minAmount ? info.feeRateBelowMin : info.feeRateAboveMin;
+        const fee = parseFloat((amount * feeRate).toFixed(2));
+        const total = parseFloat((amount + fee).toFixed(2));
+
+        amountVal.textContent = `${amount.toFixed(2)} ${currency}`;
+        feeVal.textContent = `${fee.toFixed(2)} ${currency}`;
+        totalVal.textContent = `${total.toFixed(2)} ${currency}`;
+
+        submitBtn.dataset.fee = fee;
+        submitBtn.dataset.total = total;
+        submitBtn.dataset.currency = info.currency;
+      } catch (err) {
+        console.error(err);
+        msgEl.textContent = 'Unable to load deposit details';
+      }
+    }
+
+    submitBtn.addEventListener('click', async () => {
+      msgEl.textContent = '';
+      if (!proofInput.files[0]) {
+        msgEl.textContent = 'Please upload proof';
+        return;
+      }
+
+      const form = new FormData();
+      form.append('proof', proofInput.files[0]);
+      form.append('type', 'deposit');
+      form.append('amount', amount);
+      form.append('currency', submitBtn.dataset.currency || currency);
+      form.append('method', method);
+
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
+
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`${apiBase}/api/transactions/submit-transaction`, {
+          method: 'POST',
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+          body: form
+        });
+
+        const data = await res.json();
+
+        if (res.ok) {
+          // Show modal popup instead of alert
+          modalOverlay.style.display = 'flex';
+        } else {
+          msgEl.textContent = data.message || 'Submission failed';
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit deposit';
+        }
+      } catch (err) {
+        console.error(err);
+        msgEl.textContent = 'Error submitting deposit';
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit deposit';
+      }
+    });
+
+    modalCloseBtn.addEventListener('click', () => {
+      modalOverlay.style.display = 'none';
+      localStorage.removeItem('depositAmount');
+      localStorage.removeItem('depositCurrency');
+      localStorage.removeItem('depositMethod');
+      window.location.href = './user-dashboard.html';
+    });
+
+    loadDepositInfo();
+  </script>
+</body>
+</html>

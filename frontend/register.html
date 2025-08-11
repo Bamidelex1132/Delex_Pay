@@ -1,0 +1,91 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Register</title>
+ <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
+ <link href="./assets/css/form.css" rel="stylesheet">
+</head>
+<body>
+<div class="auth-container">
+<h2>Create an Account</h2>
+<form id="registerForm">
+<input type="text" id="firstName" placeholder="First Name" required />
+<input type="text" id="lastName" placeholder="Last Name" required />
+<input type="text" id="thirdName" placeholder="Third Name (optional)" />
+
+<!-- Country Code + Phone -->
+<div style="display: flex; gap: 10px;">
+<select id="countryCode" required>
+<option value="+234">🇳🇬 +234 (Nigeria)</option>
+<option value="+1">🇺🇸 +1 (USA)</option>
+<option value="+44">🇬🇧 +44 (UK)</option>
+<option value="+91">🇮🇳 +91 (India)</option>
+<!-- Add more if needed -->
+</select>
+<input type="tel" id="phone" placeholder="Phone Number" required />
+</div>
+
+<input type="email" id="email" placeholder="Email" required />
+<input type="password" id="password" placeholder="Password" required />
+<input type="password" id="confirmPassword" placeholder="Confirm Password" required />
+<input type="text" id="refferedBy" placeholder="Referral Code (optional)" />
+
+<div>
+<input type="checkbox" id="terms" required />
+<label for="terms">I agree to the <a href="./terms.html" target="_blank">Terms & Conditions</a></label>
+</div>
+<button type="submit">Register</button>
+<div id="registerError" style="color: red; text-align: center; margin-top: 1rem;"></div>
+
+<!-- Loader HTML -->
+<div id="loader" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  z-index: 9999;
+">
+  <img src="./assets/images/logo.1.jpg" alt="Loading..." width="60" style="
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  ">
+  <p style="color: #fff; font-family: Inter, sans-serif; margin-top: 0.5rem;">Loading...</p>
+</div>
+
+<!-- Loader CSS -->
+<style>
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.1);
+      opacity: 1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+  }
+
+  body.loading {
+    overflow: hidden;
+  }
+</style>
+
+<p>Already have an account? <a href="login.html">Login</a></p>
+</form>
+</div>
+<!-- Error message -->
+
+
+
+<script src="./assets/js/register.js"></script>
+</body>
+</html>

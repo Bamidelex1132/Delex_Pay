@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Email Verification - Delex Pay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="./assets/images/logo.1.jpg" />
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      opacity: 0.15;
+      animation: moveStars 60s linear infinite;
+      background: #020b27;
+      background-image:
+        radial-gradient(#27408b 1px, transparent 1px),
+        radial-gradient(#1e3c72 1px, transparent 1px),
+        url('https://transparenttextures.com/patterns/stardust.png');
+      background-size:
+        40px 40px,
+        80px 80px,
+        cover;
+      background-position:
+        0 0,
+        20px 20px,
+        center;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: floatBg 60s linear infinite;
+    }
+
+    body {
+      background: linear-gradient(135deg, #e3f2fd, #ffffff);
+      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+  position: relative;
+  z-index: 2;
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  animation: slideUp 0.6s ease;
+}
+
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .logo {
+      width: 80px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      margin-bottom: 10px;
+      color: #1a1c2e;
+    }
+
+    .code-boxes {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .code-boxes input {
+      width: 50px;
+      height: 50px;
+      font-size: 24px;
+      text-align: center;
+      border: 2px solid #ccc;
+      border-radius: 8px;
+      transition: border-color 0.3s;
+    }
+
+    .code-boxes input:focus {
+      border-color: #3b82f6;
+      outline: none;
+    }
+
+    button {
+      background-color: #3b82f6;
+      color: white;
+      padding: 12px 30px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .resend-btn {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  color: #3b82f6;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  padding: 8px 0;
+  z-index: 1;
+}
+
+
+    #toast-container {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .toast {
+      min-width: 250px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 15px;
+      color: white;
+      animation: fadeSlide 0.5s ease, fadeOut 0.5s ease 3.5s forwards;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+
+    .toast.success {
+      background-color: #22c55e;
+    }
+
+    .toast.error {
+      background-color: #ef4444;
+    }
+
+    @keyframes fadeSlide {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      to {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="toast-container"></div>
+  <div class="container">
+    <img src="./assets/images/logo.1.jpg" alt="Delex Pay" class="logo" />
+    <h2>Verify Your Email</h2>
+    <p>Enter the 6-digit code sent to your email</p>
+
+    <div class="code-boxes">
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+      <input type="text" maxlength="1" />
+    </div>
+
+    <button onclick="submitCode()">Verify</button>
+
+    <p class="info">Didn’t get the code? Check your spam folder.</p>
+    <a href="#" class="resend-btn" onclick="resendCode()">Resend Code</a>
+  </div>
+
+  <script>
+    const inputs = document.querySelectorAll('.code-boxes input');
+
+    // Redirect verified users
+    if (localStorage.getItem("isVerified") === "true") {
+      window.location.href = "user-dashboard.html";
+    }
+
+    window.addEventListener('load', () => inputs[0].focus());
+
+    inputs.forEach((input, index) => {
+      input.addEventListener('input', () => {
+        if (input.value && index < inputs.length - 1) {
+          inputs[index + 1].focus();
+        }
+      });
+
+      input.addEventListener('keydown', (e) => {
+        if (e.key === "Backspace" && !input.value && index > 0) {
+          inputs[index - 1].focus();
+        }
+      });
+    });
+
+    function showToast(message, type = "success") {
+      const toast = document.createElement("div");
+      toast.className = `toast ${type}`;
+      toast.textContent = message;
+
+      const container = document.getElementById("toast-container");
+      container.appendChild(toast);
+
+      setTimeout(() => {
+        toast.remove();
+      }, 4000);
+    }
+
+    function submitCode() {
+      const code = Array.from(inputs).map(i => i.value).join('');
+
+      if (code.length !== 6) {
+        showToast("Please enter the full 6-digit code.", "error");
+        return;
+      }
+
+      const email = localStorage.getItem("pendingEmail");
+      if (!email) {
+        showToast("Email not found. Please register again.", "error");
+        return;
+      }
+
+      fetch("http://localhost:5000/api/auth/verify-code", { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code, email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          localStorage.removeItem("pendingEmail");
+          localStorage.setItem("isVerified", "true"); 
+          window.location.href = "login.html"; 
+        } else {
+          showToast(data.message || "Invalid code", "error");
+          inputs.forEach(i => i.value = '');
+          inputs[0].focus();
+        }
+      })
+      .catch(() => showToast("Network error", "error"));
+    }
+
+    function resendCode() {
+      const email = localStorage.getItem('pendingEmail');
+      if (!email) {
+        showToast("Email not found. Please register again.", "error");
+        return;
+      }
+
+      fetch("http://localhost:5000/api/auth/resend-code", {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email })
+      })
+      .then(res => res.json())
+      .then(data => {
+        showToast(data.message || "Verification code resent.", "success");
+      })
+      .catch(() => {
+        showToast("Something went wrong. Try again.", "error");
+      });
+    }
+  </script>
+</body>
+</html>

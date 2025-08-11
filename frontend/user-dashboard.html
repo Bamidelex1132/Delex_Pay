@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Delex Pay Dashboard</title>
+  <link rel="icon" href="./assets/images/logo.1.jpg" type="image/jpg" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"rel="stylesheet" />
+  <link
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="./assets/css/user-dashboard.css" />
+</head>
+<body>
+  <!-- Navbar -->
+  <div class="navbar-top">
+    <h1>
+      Welcome back, <span id="firstName">User</span>👋
+    </h1>
+    <div class="navbar-icons">
+      <div class="notification" title="Notifications">
+        <i class="fas fa-bell"></i>
+        <span class="dot"></span>
+      </div>
+            <img
+        id="profileImage"
+        src="./assets/images/logo.1.jpg"
+        alt="Profile"
+        onclick="window.location.href='edit-profile.html'"
+        title="Edit Profile"
+      />
+
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <img src="./assets/images/logo.1.jpg" alt="Delex Pay Logo" />
+    </div>
+    <nav class="sidebar-menu" aria-label="Primary Navigation">
+      <a href="/frontend/user-dashboard.html" class="sidebar-item active" aria-current="page">
+        <i class="fas fa-tachometer-alt"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="/frontend/deposit.html" class="sidebar-item">
+        <i class="fas fa-wallet"></i>
+        <span>Deposit</span>
+      </a>
+      <a href="/frontend/buy.html" class="sidebar-item">
+        <i class="fas fa-arrow-up"></i>
+        <span>Buy</span>
+      </a>
+      <a href="/frontend/sell.html" class="sidebar-item">
+        <i class="fas fa-arrow-down"></i>
+        <span>Sell</span>
+      </a>
+      <a href="/frontend/withdraw.html" class="sidebar-item">
+        <i class="fas fa-university"></i>
+        <span>Withdraw</span>
+      </a>
+      <a href="edit-profile.html" class="sidebar-item">
+        <i class="fas fa-user"></i>
+        <span>Profile</span>
+      </a>
+      <a href="#" id="logoutBtn" class="sidebar-item logout">
+        <i class="fas fa-sign-out-alt"></i>
+        <span>Logout</span>
+      </a>
+    </nav>
+  </aside>
+
+  <!-- Main content -->
+  <main class="dashboard-content" role="main" aria-label="Dashboard content">
+    <section class="balance-section" aria-label="Wallet balance and quick actions">
+      <div class="wallet-card" role="region" aria-live="polite" aria-atomic="true">
+        <h2>Available Balance</h2>
+        <p id="userBalance" aria-label="Current wallet balance">₦0.00</p>
+        <h6>Frozen Balance</h6>
+        <p id="frozenBalance" aria-label="Frozen Balance">₦0.00</p>
+        <p><strong>Referral Code:</strong> <span id="referral-Code"></span></p>
+
+      </div> 
+      
+      <div class="action-buttons" role="navigation" aria-label="Quick action buttons">
+        <a href="/frontend/deposit.html" class="btn" aria-label="Deposit">
+          <i class="fas fa-wallet"></i> Deposit </a>
+        </a>
+        <a href="/frontend/buy.html" class="btn" aria-label="Buy">
+          <i class="fas fa-arrow-up"></i> Buy
+        </a>
+        <a href="/frontend/sell.html" class="btn" aria-label="Sell">
+          <i class="fas fa-arrow-down"></i> Sell
+        </a>
+        <a href="/frontend/withdraw.html" class="btn" aria-label="Withdraw">
+          <i class="fas fa-university"></i> Withdraw
+        </a>
+      </div>
+    </section>
+
+    <section class="coin-cards" aria-label="Cryptocurrency price charts">
+      <article class="coin-card" tabindex="0">
+        <h4>Bitcoin (BTC)</h4>
+        <p>Naira: <span id="btcPriceNGN">Loading...</span></p>
+        <p>USD: <span id="btcPriceUSD">Loading...</span></p>
+        <canvas id="btcChart" aria-label="Bitcoin price chart"></canvas>
+      </article>
+      <article class="coin-card" tabindex="0">
+        <h4>Ethereum (ETH)</h4>
+        <p>Naira: <span id="ethPriceNGN">Loading...</span></p>
+        <p>USD: <span id="ethPriceUSD">Loading...</span></p>
+        <canvas id="ethChart" aria-label="Ethereum price chart"></canvas>
+      </article>
+      <article class="coin-card" tabindex="0">
+        <h4>Tether (USDT)</h4>
+        <p>Naira: <span id="usdtPriceNGN">Loading...</span></p>
+        <p>USD: <span id="usdtPriceUSD">Loading...</span></p>
+        <canvas id="usdtChart" aria-label="Tether price chart"></canvas>
+      </article>
+    </section>
+
+   <section class="transaction-history" aria-label="Recent transactions">
+  <h2>Recent Transactions</h2>
+  <table class="table table-dark" role="table" aria-describedby="transactionDesc">
+    <caption id="transactionDesc" class="visually-hidden">List of your recent financial transactions</caption>
+    <thead>
+  <tr>
+    <th scope="col">Date</th>
+    <th scope="col">Type</th>
+    <th scope="col">Amount</th>
+    <th scope="col">Status</th>
+    <th scope="col">Receipt</th>
+  </tr>
+</thead>
+    <tbody id="transactionTableBody">
+
+    </tbody>
+  </table>
+  <div class="d-flex justify-content-center align-items-center mt-3" aria-label="Pagination controls">
+    <button id="prevPageBtn" disabled aria-label="Previous page">Prev</button>
+    <span id="pageInfo" aria-live="polite" aria-atomic="true" class="mx-3">Page 1</span>
+    <button id="nextPageBtn" aria-label="Next page">Next</button>
+  </div>
+</section>
+
+<!-- Receipt Modal -->
+<div class="receipt-modal" id="receiptModal">
+  <div class="receipt-content">
+    <button class="close-btn" id="closeReceiptBtn" aria-label="Close receipt">&times;</button>
+    <h3>Transaction Receipt</h3>
+    <div class="receipt-body" id="receiptBody">
+      <!-- Receipt content is inserted dynamically -->
+    </div>
+  </div>
+</div>
+  </main>
+  <!-- Mobile footer navigation -->
+  <footer class="mobile-footer d-md-none" role="contentinfo" aria-label="Mobile navigation">
+    <a href="#" class="active" aria-current="page">
+      <i class="fas fa-home"></i><span>Home</span>
+    </a>
+    <a href="#">
+      <i class="fas fa-clock"></i><span>History</span>
+    </a>
+    <a href="edit-profile.html">
+      <i class="fas fa-user"></i><span>Profile</span>
+    </a>
+  </footer>
+</body>
+<script src="./assets/js/dashboard.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

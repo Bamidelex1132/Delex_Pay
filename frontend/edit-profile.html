@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Profile | Delex Pay</title>
+  <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
+  <link href="./assets/css/form.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<style>
+  body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #0e0f1a;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  flex-direction: column; /* to stack containers vertically */
+}
+
+.container {
+  background-color: #111322;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+  max-width: 400px;
+  width: 100%;
+  position: relative;
+  margin-bottom: 30px; /* space between the two containers */
+}
+
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  text-decoration: none;
+  background: rgba(59, 130, 246, 0.1);
+  padding: 8px 14px;
+  border-radius: 8px;
+  color: #3b82f6;
+  font-weight: 600;
+  z-index: 1000;
+}
+
+h2 {
+  text-align: center;
+  color: #3b82f6;
+  margin-bottom: 1.5rem;
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="tel"],
+input[type="file"] {
+  padding: 10px;
+  margin-bottom: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1a1c2e;
+  color: #fff;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="tel"]:focus {
+  outline: none;
+  border: 2px solid #3b82f6;
+  background-color: #22253a;
+}
+
+input[type='file'] {
+  background-color: #1a1c2e;
+  color: #3b82f6;
+  padding: 10px;
+  border: 2px dashed #3b82f6;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+input[type="submit"],
+button[type="submit"] {
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+input[type="submit"]:hover,
+button[type="submit"]:hover {
+  background-color: #2563eb;
+}
+
+.profile-preview {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+#previewImage {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #3b82f6;
+}
+
+.image-upload-wrapper {
+  position: relative;
+  width: 140px;
+  margin: 20px auto;
+}
+
+.image-upload-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+}
+
+.image-upload-label img {
+  width: 120px;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 2px solid #ccc;
+  transition: 0.3s;
+}
+
+.image-upload-label:hover img {
+  opacity: 0.7;
+  border-color: #007bff;
+}
+
+.upload-text {
+  margin-top: 10px;
+  font-size: 12px;
+  color: #666;
+  text-align: center;
+}
+
+input[type="file"] {
+  display: none;
+}
+
+.toast {
+  padding: 12px 20px;
+  margin-top: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+  animation: fadeInOut 4s ease-in-out;
+  color: #fff;
+  box-shadow: 0 0 10px rgba(0,0,0,0.3);
+}
+.toast.success { background-color: #3b82f6; }
+.toast.error { background-color: #ef4444; }
+
+@keyframes fadeInOut {
+  0% { opacity: 0; transform: translateY(-10px); }
+  10% { opacity: 1; transform: translateY(0); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-10px); }
+}
+
+/* === Bank Details Form Specific Styles === */
+
+#bankDetailsForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 1rem 0;
+}
+
+#bankDetailsForm label {
+  font-weight: 600;
+  color: #3b82f6;
+  margin-bottom: 4px;
+}
+
+#bankDetailsForm input[type="text"] {
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background-color: #1a1c2e;
+  color: #fff;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+#bankDetailsForm input[type="text"]:focus {
+  outline: none;
+  border: 2px solid #3b82f6;
+  background-color: #22253a;
+}
+
+#bankDetailsForm button[type="submit"] {
+  padding: 10px 0;
+  border: none;
+  border-radius: 8px;
+  background-color: #3b82f6;
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  margin-top: 10px;
+}
+
+#bankDetailsForm button[type="submit"]:hover {
+  background-color: #2563eb;
+}
+
+#message {
+  margin-top: 10px;
+  font-weight: 600;
+  text-align: center;
+  min-height: 20px;
+  color: #3b82f6;
+}
+
+</style>
+<body>
+  <a href="/frontend/user-dashboard.html" class="back-btn">
+    <i class="fas fa-arrow-left"></i> Back
+  </a>
+
+  <div class="container">
+    <h2>Edit Profile</h2>
+
+    <div class="image-upload-wrapper">
+      <label for="profilePic" class="image-upload-label">
+        <img id="previewImage" src="./assets/images/logo.1.jpg" alt="Profile Preview" />
+        <span class="upload-text">Click to change profile picture</span>
+      </label>
+      <input type="file" id="profilePic" name="profilePic" accept="image/*" />
+    </div>
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+    <form id="editProfileForm" enctype="multipart/form-data">
+      <input type="text" id="firstName" placeholder="First Name" />
+      <input type="text" id="thirdName" placeholder="Middle Name (optional)" />
+      <input type="text" id="lastName" placeholder="Last Name" />
+      <input type="tel" id="phone" placeholder="Phone Number (optional)" />
+      <input type="email" id="email" placeholder="Email" disabled />
+      <button type="submit">Save Changes</button>
+    </form>
+  </div>
+
+  <div class="container">
+      <h2>Edit Bank Details</h2>
+    <form id="bankDetailsForm">
+      <label for="bankName">Bank Name:</label>
+      <input type="text" id="bankName" name="bankName" required />
+
+      <label for="accountNumber">Account Number:</label>
+      <input type="text" id="accountNumber" name="accountNumber" required />
+
+      <label for="accountName">Account Name:</label>
+      <input type="text" id="accountName" name="accountName" required />
+
+      <button type="submit">Save Bank Details</button>
+    </form>
+
+    <div id="message"></div>
+  </div>
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css" />
+  <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const token = localStorage.getItem("token");
+      const apiBase = "http://localhost:5000"; 
+
+
+      function showToast(message, type = "success") {
+        Toastify({
+          text: message,
+          duration: 4000,
+          gravity: "top",
+          position: "right",
+          backgroundColor: type === "error" ? "#ef4444" : "#3b82f6",
+          stopOnFocus: true,
+        }).showToast();
+      }
+
+
+      (async () => {
+        try {
+          const res = await fetch(`${apiBase}/api/user/profile`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          const data = await res.json();
+          if (!data.user) throw new Error("User data not found");
+
+          const user = data.user;
+          console.log("Fetched user data:", user);
+
+          document.getElementById("firstName").value = user.firstName || "";
+          document.getElementById("thirdName").value = user.thirdName || "";
+          document.getElementById("lastName").value = user.lastName || "";
+          document.getElementById("phone").value = user.phone || "";
+          document.getElementById("email").value = user.email || "";
+
+
+          if (user.bankDetails) {
+            document.getElementById("bankName").value = user.bankDetails.bankName || "";
+            document.getElementById("accountNumber").value = user.bankDetails.accountNumber || "";
+            document.getElementById("accountName").value = user.bankDetails.accountName || "";
+          }
+
+        } catch (err) {
+          console.error("Error loading profile:", err);
+          showToast("Failed to load profile info.", "error");
+        }
+      })();
+
+
+      const profilePicInput = document.getElementById("profilePic");
+      if (profilePicInput) {
+        profilePicInput.addEventListener("change", function (event) {
+          const file = event.target.files[0];
+          if (file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+              document.getElementById("previewImage").src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+
+
+      document.getElementById("bankDetailsForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+
+        if (!token) {
+          alert("Please log in to submit your bank details.");
+          return;
+        }
+
+        const bankName = document.getElementById("bankName").value.trim();
+        const accountNumber = document.getElementById("accountNumber").value.trim();
+        const accountName = document.getElementById("accountName").value.trim();
+
+        if (!bankName || !accountNumber || !accountName) {
+          alert("Please fill all the fields.");
+          return;
+        }
+
+        const payload = { bankName, accountNumber, accountName };
+
+        try {
+          const res = await fetch(`${apiBase}/api/user/bank-details`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(payload),
+          });
+
+          const data = await res.json();
+          const messageDiv = document.getElementById("message");
+
+          if (res.ok) {
+            messageDiv.textContent = data.message;
+            messageDiv.style.color = "lightgreen";
+            showToast(data.message);
+          } else {
+            messageDiv.textContent = data.message || "Error submitting bank details.";
+            messageDiv.style.color = "salmon";
+            showToast(data.message || "Error submitting bank details.", "error");
+          }
+        } catch (error) {
+          console.error("Error submitting bank details:", error);
+          const messageDiv = document.getElementById("message");
+          messageDiv.textContent = "Failed to submit bank details.";
+          messageDiv.style.color = "salmon";
+          showToast("Failed to submit bank details.", "error");
+        }
+      });
+
+    });
+  </script>
+</body>
+</html>

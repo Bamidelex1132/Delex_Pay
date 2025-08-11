@@ -1,0 +1,156 @@
+* {
+box-sizing: border-box;
+margin: 0;
+padding: 0;
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Starry boxy background */
+body {
+background: #020b27;
+background-image:
+radial-gradient(#27408b 1px, transparent 1px),
+radial-gradient(#1e3c72 1px, transparent 1px),
+url('https://transparenttextures.com/patterns/stardust.png'); /* fallback stars */
+background-size:
+40px 40px, /* Boxy grid pattern */
+80px 80px, /* Larger star grid */
+cover;
+background-position:
+0 0,
+20px 20px,
+center;
+min-height: 100vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 20px;
+animation: floatBg 60s linear infinite;
+}
+
+/* Floating animation for subtle movement */
+@keyframes floatBg {
+0% { background-position: 0 0, 20px 20px, center; }
+100% { background-position: 100px 100px, 120px 120px, center; }
+}
+
+/* Auth box container */
+.auth-container {
+background: #ffffff;
+padding: 30px 25px;
+border-radius: 12px;
+width: 100%;
+max-width: 420px;
+box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+animation: fadeIn 0.6s ease-in-out;
+}
+
+.auth-container h2 {
+text-align: center;
+margin-bottom: 25px;
+color: #1e3c72;
+}
+
+/* Inputs */
+.auth-container input[type="text"],
+.auth-container input[type="email"],
+.auth-container input[type="password"],
+.auth-container input[type="tel"],
+.auth-container select {
+width: 100%;
+padding: 12px 14px;
+margin: 10px 0;
+border: 1px solid #ccc;
+border-radius: 8px;
+transition: border 0.3s;
+}
+
+.auth-container input:focus,
+.auth-container select:focus {
+outline: none;
+border-color: #1e3c72;
+}
+
+/* Checkbox & Label */
+.auth-container label {
+font-size: 14px;
+color: #333;
+}
+
+.auth-container a {
+color: #1e3c72;
+text-decoration: none;
+}
+
+.auth-container a:hover {
+text-decoration: underline;
+}
+
+/* Button */
+.auth-container button {
+width: 100%;
+padding: 12px;
+margin-top: 15px;
+background: #1e3c72;
+color: #fff;
+border: none;
+border-radius: 8px;
+font-weight: bold;
+cursor: pointer;
+transition: background 0.3s;
+}
+
+.auth-container button:hover {
+background: #162c5f;
+}
+
+/* Subtext */
+.auth-container p {
+text-align: center;
+margin-top: 15px;
+font-size: 14px;
+}
+
+/* Phone + Country Select row */
+.auth-container > form > .phone-group {
+display: flex;
+gap: 10px;
+}
+#loader {
+  display: none;
+  text-align: center;
+  margin-top: 1rem;
+  color: #3b82f6;
+  font-weight: bold;
+  font-family: 'Inter', sans-serif;
+}
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Fade-in animation */
+@keyframes fadeIn {
+0% {
+transform: translateY(20px);
+opacity: 0;
+}
+100% {
+transform: translateY(0px);
+opacity: 1;
+}
+}

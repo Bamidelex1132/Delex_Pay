@@ -1,0 +1,36 @@
+<!-- frontend/verify.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify Email | Delex Pay</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      background: #0e0f1a;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .box {
+      background: #111322;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #3b82f6;
+    }
+    h1 {
+      color: #3b82f6;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <h1>Email Not Verified</h1>
+    <p>Please check your inbox and click the verification link.</p>
+    <p>If you didn’t get the email, <a href="/frontend/resend-verification.html">resend it</a>.</p>
+  </div>
+</body>
+</html>

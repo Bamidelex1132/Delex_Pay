@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Delex Pay</title>
+   <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
+ <link href="assets/css/style.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+<body>
+    <nav class="navbar">
+  <div class="nav-container">
+    <a href="/" class="nav-logo">
+  <img src="assets/images/logo.1.jpg" alt="Delex Pay Logo" class="nav-logo-img" />
+  <span>Delex Pay</span>
+</a>
+    <button class="nav-toggle" id="navToggle">&#9776;</button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="index.html">Home</a></li>
+      <li class="nav-item"><a class="nav-link" href="features.html">Features</a></li>
+      <li class="nav-item"><a class="nav-link" href="./terms.html">Terms & Conditions</a></li>
+    <li class="nav-item"><a class="nav-link" href="how-it-works.html">How It Works</a></li>
+    <li class="nav-item"><a class="nav-link" href="./privacy.html">Privacy</a></li>
+    <li><a href="login.html">Login</a></li>
+      <li><a href="register.html" class="btn-small">Get Started</a></li>
+    </ul>
+  </div>
+</nav>
+
+  <header class="hero">
+    <div class="overlay">
+      <img src="assets/images/logo.1.jpg" alt="Delex Pay Logo" class="logo" />
+      <h1>Welcome to Delex Pay</h1>
+      <p>Fast. Secure. Reliable Crypto Gas Fee Payments</p>
+      <a href="register.html" class="btn">Get Started</a>
+    </div>
+  </header>
+
+  <section class="features">
+    <div class="feature-box">
+      <h2>Low Gas Fees</h2>
+      <p>Send and receive with optimized transaction costs.</p>
+    </div>
+    <div class="feature-box">
+      <h2>Fast Approvals</h2>
+      <p>Transactions verified in minutes, not hours.</p>
+    </div>
+    <div class="feature-box">
+      <h2>24/7 Support</h2>
+      <p>We're here anytime to help you out.</p>
+    </div>
+  </section>
+
+  <footer>
+    <p>&copy; 2025 Delex Pay. All rights reserved.</p>
+  </footer>
+    <script>
+  const navToggle = document.getElementById('navToggle');
+  const navLinks = document.getElementById('navLinks');
+
+  navToggle.addEventListener('click', () => {
+    navLinks.classList.toggle('show');
+  });
+</script>
+
+</body>
+</html>

@@ -37,11 +37,11 @@ document.getElementById("loginForm").addEventListener("submit", async (e) => {
     }
 
     // ✅ Redirect verified users based on role
-    if (user.role === "admin") {
-      window.location.href = "admin-dashboard.html";
-    } else {
-      window.location.href = "user-dashboard.html";
-    }
+    if (user.role === "admin" || user.isAdmin === true) {
+  window.location.href = "admin-dashboard.html";
+} else {
+  window.location.href = "user-dashboard.html";
+}
 
   } catch (err) {
     console.error("Login error:", err);

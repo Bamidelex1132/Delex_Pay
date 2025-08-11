@@ -90,7 +90,7 @@
       display: none;
       z-index: 1000;
     }
-    #bankInfo {
+    #bankInfo, #sendToInfo {
       background: #22283a;
       padding: 10px;
       border-radius: 8px;
@@ -98,15 +98,7 @@
       color: #a5b4fc;
       display: none;
       font-size: 0.9rem;
-    }
-    #sendToInfo {
-      background: #22283a;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      color: #a5b4fc;
-      display: none;
-      font-size: 0.9rem;
+      white-space: pre-line;
     }
   </style>
 </head>
@@ -246,6 +238,7 @@
         option.textContent = `${coin.name} (${coin.symbol || coin.name})`;
         option.dataset.hasNetwork = coin.hasNetwork || false;
         option.dataset.networks = JSON.stringify(coin.networks || []);
+        option.dataset.payoutEmails = JSON.stringify(coin.payoutEmails || {});
         coinSelect.appendChild(option);
       });
     } catch (err) {
@@ -277,7 +270,6 @@
     currentPriceNGN = await fetchCoinGeckoPrice(selectedOption.value);
     calculatePayout();
 
-    // Update send-to info in case send-from is wallet and network changes
     if (coinSendFromSelect.value === 'wallet') {
       updateSendToInfo();
     }
@@ -291,7 +283,6 @@
       payoutAmountDisplay.textContent = `You will receive: NGN 0`;
       return;
     }
-    // Apply 5% discount (price * 0.95)
     const payout = Math.round(amount * currentPriceNGN * discountRate);
     payoutAmountDisplay.textContent = `You will receive: NGN ${payout.toLocaleString()}`;
   }
@@ -359,7 +350,6 @@
       return;
     }
 
-    // Find selected coin data
     const selectedOption = coinSelect.options[coinSelect.selectedIndex];
     const selectedCoinSymbol = selectedOption ? selectedOption.value : null;
     const coin = coins.find(c => (c.symbol || c.name) === selectedCoinSymbol);
@@ -375,40 +365,38 @@
     if (sendFrom === 'wallet') {
       const selectedNetwork = networkSelect.value;
       if (coin.hasNetwork && selectedNetwork) {
-        // Show wallet address for selected network
         const net = coin.networks.find(n => n.name === selectedNetwork);
         if (net && net.walletAddress) {
-          info = `Send your coins to this wallet address:<br><strong>${net.walletAddress}</strong>`;
+          info = `Send your coins to this wallet address:\n${net.walletAddress}`;
         } else {
           info = 'No wallet address found for selected network.';
         }
       } else {
-        // fallback to user wallet address
         if (user.walletAddress) {
-          info = `Send your coins to your wallet address:<br><strong>${user.walletAddress}</strong>`;
+          info = `Send your coins to your wallet address:\n${user.walletAddress}`;
         } else {
           info = 'No wallet address found. Please add one in your profile.';
         }
       }
     } else if (sendFrom === 'bybit') {
-      if (coin.payoutEmails && coin.payoutEmails.get('bybit')) {
-        info = `Send your coins to this Bybit email:<br><strong>${coin.payoutEmails.get('bybit')}</strong>`;
+      if (coin.payoutEmails && coin.payoutEmails.get && coin.payoutEmails.get('bybit')) {
+        info = `Send your coins to this Bybit email:\n${coin.payoutEmails.get('bybit')}`;
       } else if (user.bybitEmail) {
-        info = `Send your coins to your Bybit email:<br><strong>${user.bybitEmail}</strong>`;
+        info = `Send your coins to your Bybit email:\n${user.bybitEmail}`;
       } else {
         info = 'No Bybit email found. Please add one in your profile.';
       }
     } else if (sendFrom === 'binance') {
-      if (coin.payoutEmails && coin.payoutEmails.get('binance')) {
-        info = `Send your coins to this Binance email:<br><strong>${coin.payoutEmails.get('binance')}</strong>`;
+      if (coin.payoutEmails && coin.payoutEmails.get && coin.payoutEmails.get('binance')) {
+        info = `Send your coins to this Binance email:\n${coin.payoutEmails.get('binance')}`;
       } else if (user.binanceEmail) {
-        info = `Send your coins to your Binance email:<br><strong>${user.binanceEmail}</strong>`;
+        info = `Send your coins to your Binance email:\n${user.binanceEmail}`;
       } else {
         info = 'No Binance email found. Please add one in your profile.';
       }
     }
 
-    sendToInfoDiv.innerHTML = info;
+    sendToInfoDiv.textContent = info;
     sendToInfoDiv.style.display = 'block';
   }
 
@@ -429,7 +417,7 @@
 
     const formData = new FormData(sellForm);
 
-    if (formData.get('confirmationChecked') !== 'on') {
+    if (!formData.get('confirmationChecked')) {
       showToast('Please confirm you have sent the tokens.', true);
       return;
     }
@@ -451,22 +439,12 @@
       return;
     }
 
-    // Confirm with user if sending coins from Bybit or Binance
     if (coinSendFrom === 'bybit' || coinSendFrom === 'binance') {
       const confirmSend = confirm(`Are you sure you want to send coins from ${coinSendFrom.charAt(0).toUpperCase() + coinSendFrom.slice(1)}?`);
       if (!confirmSend) {
-        return; // User cancelled submission
+        return;
       }
     }
-
-    // Debug log
-    console.log('Submitting sell order:', {
-      coin: formData.get('coinSymbol'),
-      network: formData.get('network'),
-      payoutDestination,
-      coinSendFrom,
-      amount: formData.get('amount'),
-    });
 
     try {
       const res = await fetch(`${apiBase}/sell`, {
@@ -498,10 +476,8 @@
     }
   });
 
-  // Load coins when page loads
   loadCoins();
 </script>
-
 
 </body>
 </html>

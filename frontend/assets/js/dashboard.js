@@ -270,7 +270,7 @@ function showToast(message, type = "info") {
 
 document.getElementById("logoutBtn").addEventListener("click", async () => {
   const token = localStorage.getItem("authToken");
-  if (!token) return (window.location.href = "/login.html");
+  if (!token) return (window.location.href = "login.html");
 
   try {
     const res = await fetch("https://delex-pay.onrender.com/api/auth/logout", {
@@ -281,7 +281,7 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     if (res.ok) {
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = "/login.html";
+      window.location.href = "login.html";
     } else {
       const data = await res.json();
       alert("Logout failed: " + data.message);

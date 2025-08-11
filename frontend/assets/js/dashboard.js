@@ -268,9 +268,18 @@ function showToast(message, type = "info") {
 
 
 
-document.getElementById("logoutBtn").addEventListener("click", async () => {
+const logoutBtn = document.getElementById("logoutBtn");
+
+logoutBtn.addEventListener("click", async (e) => {
+  e.preventDefault();
+
+  // Visual feedback on click
+  logoutBtn.style.color = "red";         // Change text color
+  logoutBtn.style.cursor = "wait";       // Show loading cursor
+  logoutBtn.style.pointerEvents = "none"; // Disable further clicks while processing
+
   const token = localStorage.getItem("authToken");
-  if (!token) return (window.location.href = "login.html");
+  if (!token) return (window.location.href = "/login.html");
 
   try {
     const res = await fetch("https://delex-pay.onrender.com/api/auth/logout", {
@@ -281,13 +290,21 @@ document.getElementById("logoutBtn").addEventListener("click", async () => {
     if (res.ok) {
       localStorage.clear();
       sessionStorage.clear();
-      window.location.href = "login.html";
+      window.location.href = "/login.html";
     } else {
       const data = await res.json();
       alert("Logout failed: " + data.message);
+      // Reset styles on failure
+      logoutBtn.style.color = "";
+      logoutBtn.style.cursor = "";
+      logoutBtn.style.pointerEvents = "";
     }
   } catch (err) {
     console.error(err);
     alert("Something went wrong during logout.");
+    // Reset styles on error
+    logoutBtn.style.color = "";
+    logoutBtn.style.cursor = "";
+    logoutBtn.style.pointerEvents = "";
   }
 });

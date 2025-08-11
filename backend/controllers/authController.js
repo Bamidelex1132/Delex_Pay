@@ -260,6 +260,8 @@ const login = async (req, res) => {
         firstName: user.firstName,
         lastName: user.lastName,
         referralCode: user.referralCode,
+        role: user.role,
+        isAdmin: user.isAdmin
       }
     });
 

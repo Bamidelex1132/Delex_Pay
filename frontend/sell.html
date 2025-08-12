@@ -1,482 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Sell Coin | Delex Pay</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Sell Crypto | Delex Pay</title>
   <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
-  <style>
-    body {
-      background: #0e0f1a;
-      color: #fff;
-      font-family: 'Inter', sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      margin: 0;
-    }
-    .container {
-      background: #111322;
-      padding: 2rem;
-      border-radius: 12px;
-      width: 400px;
-      box-shadow: 0 0 20px rgba(59, 130, 246, 0.5);
-    }
-    h2 {
-      text-align: center;
-      margin-bottom: 1rem;
-      color: #3b82f6;
-    }
-    label {
-      display: block;
-      margin-bottom: 0.3rem;
-      font-weight: 600;
-    }
-    select, input[type="number"], input[type="file"], input[type="checkbox"] {
-      width: 100%;
-      padding: 10px;
-      border-radius: 8px;
-      border: none;
-      margin-bottom: 1rem;
-      background: #1a1c2e;
-      color: #fff;
-      font-size: 1rem;
-    }
-    input[type="checkbox"] {
-      width: auto;
-      margin-right: 0.5rem;
-    }
-    .checkbox-label {
-      display: flex;
-      align-items: center;
-      margin-bottom: 1rem;
-      font-weight: 500;
-      font-size: 0.9rem;
-      color: #ccc;
-    }
-    button {
-      width: 100%;
-      padding: 12px;
-      border: none;
-      border-radius: 8px;
-      background: #3b82f6;
-      color: white;
-      font-size: 1rem;
-      cursor: pointer;
-      font-weight: 700;
-      transition: background 0.3s ease;
-    }
-    button:hover {
-      background: #2563eb;
-    }
-    #payoutAmount {
-      font-weight: 700;
-      margin-bottom: 1rem;
-      text-align: center;
-      font-size: 1.2rem;
-      color: #60a5fa;
-    }
-    #toast {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      background: #3b82f6;
-      padding: 12px 20px;
-      border-radius: 8px;
-      color: white;
-      font-weight: 600;
-      display: none;
-      z-index: 1000;
-    }
-    #bankInfo, #sendToInfo {
-      background: #22283a;
-      padding: 10px;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      color: #a5b4fc;
-      display: none;
-      font-size: 0.9rem;
-      white-space: pre-line;
-    }
-  </style>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    max-width: 480px;
+    margin: 2rem auto;
+    padding: 1rem;
+    background: #f0f4f8;
+  }
+  label {
+    display: block;
+    margin: 0.5rem 0 0.2rem;
+  }
+  input, select, button {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  button {
+    background: #004aad;
+    color: white;
+    border: none;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  button:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+  }
+  #payoutDisplay {
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+</style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Sell Coin</h2>
+<h2>Sell Crypto</h2>
 
-  <form id="sellForm" enctype="multipart/form-data">
-    <label for="coinSelect">Select Coin</label>
-    <select id="coinSelect" name="coinSymbol" required>
-      <option value="" disabled selected>Select coin</option>
-      <!-- Coins populated dynamically -->
-    </select>
+<form id="sellForm" enctype="multipart/form-data">
+  <label for="coinSelect">Select Coin</label>
+  <select id="coinSelect" name="coinSymbol" required>
+    <option value="">-- Choose Coin --</option>
+    <option value="pi">Pi</option>
+    <option value="sidra">Sidra</option>
+  </select>
 
+  <div id="networkContainer" style="display:none;">
     <label for="networkSelect">Select Network</label>
-    <select id="networkSelect" name="network" disabled>
-      <option value="" disabled selected>Select network</option>
-    </select>
+    <select id="networkSelect" name="network"></select>
+  </div>
 
-    <label for="payoutDestination">Where should we send your payout?</label>
-    <select id="payoutDestination" name="payoutDestination" required>
-      <option value="" disabled selected>Select payout destination</option>
-      <option value="wallet">Wallet Balance</option>
-      <option value="bank">Bank Account</option>
-    </select>
+  <label for="amount">Amount to Sell</label>
+  <input type="number" id="amount" name="amount" min="0.0001" step="any" required />
 
-    <div id="bankInfo"></div>
+  <p id="payoutDisplay">You will receive: ₦0.00</p>
 
-    <label for="coinSendFrom">Where are you sending the coins from?</label>
-    <select id="coinSendFrom" name="coinSendFrom" required>
-      <option value="" disabled selected>Select coin sending source</option>
-      <option value="wallet">Wallet</option>
-      <option value="bybit">Bybit</option>
-      <option value="binance">Binance</option>
-    </select>
-    <div id="sendToInfo"></div>
+  <label for="payoutDestination">Payout Destination (Wallet or Bank Details)</label>
+  <input type="text" id="payoutDestination" name="payoutDestination" placeholder="Enter wallet or bank details" required />
 
-    <label for="amountInput">Amount to Sell</label>
-    <input type="number" id="amountInput" name="amount" min="0.0001" step="any" required />
+  <label>
+    <input type="checkbox" id="confirmationChecked" name="confirmationChecked" required />
+    I confirm I want to sell this coin.
+  </label>
 
-    <div id="payoutAmount">You will receive: NGN 0</div>
+  <label for="proofUpload">Upload Proof (optional)</label>
+  <input type="file" id="proofUpload" name="proof" accept=".jpg,.jpeg,.png,.pdf" />
 
-    <label for="proofInput">Upload Proof</label>
-    <input type="file" id="proofInput" name="proof" accept="image/*" required />
-
-    <label class="checkbox-label">
-      <input type="checkbox" id="confirmCheckbox" name="confirmationChecked" required />
-      I confirm I have sent the tokens
-    </label>
-
-    <button type="submit">Submit Sell Order</button>
-  </form>
-</div>
-
-<div id="toast"></div>
+  <button type="submit" id="submitBtn" disabled>Submit Sell Order</button>
+</form>
 
 <script>
-  const apiBase = 'https://delex-pay.onrender.com/api/user';
-  const token = localStorage.getItem('token');
-
+(async function() {
   const coinSelect = document.getElementById('coinSelect');
   const networkSelect = document.getElementById('networkSelect');
-  const payoutDestinationSelect = document.getElementById('payoutDestination');
-  const coinSendFromSelect = document.getElementById('coinSendFrom');
-  const bankInfoDiv = document.getElementById('bankInfo');
-  const sendToInfoDiv = document.getElementById('sendToInfo');
-  const amountInput = document.getElementById('amountInput');
-  const payoutAmountDisplay = document.getElementById('payoutAmount');
-  const sellForm = document.getElementById('sellForm');
-  const discountRate = 0.95; // 5% discount
+  const networkContainer = document.getElementById('networkContainer');
+  const amountInput = document.getElementById('amount');
+  const payoutDisplay = document.getElementById('payoutDisplay');
+  const confirmationCheckbox = document.getElementById('confirmationChecked');
+  const submitBtn = document.getElementById('submitBtn');
 
-  let coins = [];
-  let selectedCoin = null;
-  let currentPriceNGN = 0;
+  const MARKUP_PERCENT = 5; // 5% markup on sell
 
-  function showToast(message, isError = false) {
-    const toast = document.getElementById('toast');
-    toast.textContent = message;
-    toast.style.backgroundColor = isError ? '#ef4444' : '#3b82f6';
-    toast.style.display = 'block';
-    setTimeout(() => {
-      toast.style.display = 'none';
-    }, 3500);
-  }
-
-  const symbolToCoinId = {
-    BTC: 'bitcoin',
-    ETH: 'ethereum',
-    USDT: 'tether',
-    PI: 'pi-network',
-    SIDRA: 'sidra-bank'
+  // Example networks for your coins (ideally fetched from backend)
+  const coinNetworks = {
+    pi: ['mainnet'],
+    sidra: ['mainnet', 'testnet']
   };
 
-  async function fetchCoinGeckoPrice(symbol) {
-    const coinId = symbolToCoinId[symbol.toUpperCase()];
-    if (!coinId) {
-      showToast(`Unsupported coin: ${symbol}`, true);
-      return 0;
+  let currentRateNGN = 0; // live price per coin in NGN
+
+  function updateNetworks(coin) {
+    if (coinNetworks[coin] && coinNetworks[coin].length > 0) {
+      networkContainer.style.display = 'block';
+      networkSelect.innerHTML = '';
+      coinNetworks[coin].forEach(net => {
+        const option = document.createElement('option');
+        option.value = net;
+        option.textContent = net.charAt(0).toUpperCase() + net.slice(1);
+        networkSelect.appendChild(option);
+      });
+    } else {
+      networkContainer.style.display = 'none';
+      networkSelect.innerHTML = '';
     }
-    const url = `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=ngn`;
+  }
+
+  async function fetchPrice(coin) {
     try {
-      const response = await fetch(url);
-      if (!response.ok) throw new Error(`CoinGecko API error: ${response.status}`);
-      const data = await response.json();
-      if (data[coinId] && data[coinId].ngn) {
-        return parseFloat(data[coinId].ngn);
-      } else {
-        throw new Error(`No price data found for ${symbol}`);
-      }
-    } catch (error) {
-      console.error('CoinGecko price fetch error:', error);
-      showToast('Failed to get live price for ' + symbol, true);
+      // Fetch live price in NGN from your backend or CoinGecko proxy API
+      const res = await fetch(`/api/coins/price?coin=${coin}`);
+      if (!res.ok) throw new Error('Price fetch failed');
+      const data = await res.json();
+      return data.ngnPrice || 0;
+    } catch (err) {
+      console.error(err);
       return 0;
     }
   }
 
-  async function loadCoins() {
-    if (!token) {
-      showToast('No auth token found. Please log in.', true);
-      return;
-    }
-    try {
-      const res = await fetch(`${apiBase}/coins`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast('Failed to fetch coins: ' + (data.message || res.statusText), true);
-        return;
-      }
-      coins = data;
-      coinSelect.innerHTML = '<option value="" disabled selected>Select coin</option>';
-      coins.forEach(coin => {
-        const option = document.createElement('option');
-        option.value = coin.symbol || coin.name;
-        option.textContent = `${coin.name} (${coin.symbol || coin.name})`;
-        option.dataset.hasNetwork = coin.hasNetwork || false;
-        option.dataset.networks = JSON.stringify(coin.networks || []);
-        option.dataset.payoutEmails = JSON.stringify(coin.payoutEmails || {});
-        coinSelect.appendChild(option);
-      });
-    } catch (err) {
-      showToast('Error loading coins', true);
-      console.error(err);
-    }
+  function calculatePayout(amount, rate) {
+    if (!amount || amount <= 0 || !rate) return 0;
+    const payoutPerCoin = rate * (1 - MARKUP_PERCENT / 100);
+    return payoutPerCoin * amount;
+  }
+
+  function updatePayoutDisplay(amount) {
+    const totalPayout = calculatePayout(amount, currentRateNGN);
+    payoutDisplay.textContent = `You will receive: ₦${totalPayout.toFixed(2)}`;
   }
 
   coinSelect.addEventListener('change', async () => {
-    const selectedOption = coinSelect.options[coinSelect.selectedIndex];
-    selectedCoin = coins.find(c => (c.symbol || c.name) === selectedOption.value);
-
-    const hasNetwork = selectedOption.dataset.hasNetwork === "true";
-    const networks = JSON.parse(selectedOption.dataset.networks || "[]");
-    if (hasNetwork && networks.length > 0) {
-      networkSelect.disabled = false;
-      networkSelect.innerHTML = '<option value="" disabled selected>Select network</option>';
-      networks.forEach(net => {
-        const opt = document.createElement('option');
-        opt.value = net.name || net;
-        opt.textContent = net.name || net;
-        networkSelect.appendChild(opt);
-      });
+    const coin = coinSelect.value;
+    updateNetworks(coin);
+    if (coin) {
+      currentRateNGN = await fetchPrice(coin);
+      updatePayoutDisplay(parseFloat(amountInput.value));
     } else {
-      networkSelect.disabled = true;
-      networkSelect.innerHTML = '<option value="" disabled selected>No networks available</option>';
+      currentRateNGN = 0;
+      payoutDisplay.textContent = 'You will receive: ₦0.00';
     }
-
-    currentPriceNGN = await fetchCoinGeckoPrice(selectedOption.value);
-    calculatePayout();
-
-    if (coinSendFromSelect.value === 'wallet') {
-      updateSendToInfo();
-    }
+    validateForm();
   });
 
-  amountInput.addEventListener('input', calculatePayout);
-
-  function calculatePayout() {
-    const amount = parseFloat(amountInput.value);
-    if (!selectedCoin || !amount || amount <= 0 || currentPriceNGN === 0) {
-      payoutAmountDisplay.textContent = `You will receive: NGN 0`;
-      return;
-    }
-    const payout = Math.round(amount * currentPriceNGN * discountRate);
-    payoutAmountDisplay.textContent = `You will receive: NGN ${payout.toLocaleString()}`;
-  }
-
-  payoutDestinationSelect.addEventListener('change', async () => {
-    bankInfoDiv.style.display = 'none';
-    bankInfoDiv.textContent = '';
-
-    if (payoutDestinationSelect.value === 'bank') {
-      if (!token) {
-        showToast('You must be logged in to view bank details.', true);
-        payoutDestinationSelect.value = '';
-        return;
-      }
-      try {
-        const res = await fetch(`${apiBase}/profile`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('Failed to fetch user profile');
-        const user = await res.json();
-        if (user.bankDetails && user.bankDetails.bankVerified) {
-          bankInfoDiv.style.display = 'block';
-          bankInfoDiv.innerHTML = `
-            <strong>Your Verified Bank Account:</strong><br>
-            Bank: ${user.bankDetails.bankName}<br>
-            Account Name: ${user.bankDetails.accountName}<br>
-            Account Number: ${user.bankDetails.accountNumber}
-          `;
-        } else {
-          showToast('No verified bank account found. Please add and verify one.', true);
-          payoutDestinationSelect.value = '';
-        }
-      } catch (err) {
-        showToast(err.message, true);
-        payoutDestinationSelect.value = '';
-      }
-    }
+  amountInput.addEventListener('input', () => {
+    updatePayoutDisplay(parseFloat(amountInput.value));
+    validateForm();
   });
 
-  async function fetchUserSendAddresses() {
-    if (!token) return null;
-    try {
-      const res = await fetch(`${apiBase}/profile`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Failed to fetch user profile');
-      const user = await res.json();
-      return user;
-    } catch (err) {
-      console.error(err);
-      return null;
-    }
+  confirmationCheckbox.addEventListener('change', validateForm);
+
+  function validateForm() {
+    submitBtn.disabled = !(coinSelect.value && amountInput.value > 0 && confirmationCheckbox.checked);
   }
 
-  async function updateSendToInfo() {
-    const sendFrom = coinSendFromSelect.value;
-    sendToInfoDiv.style.display = 'none';
-    sendToInfoDiv.textContent = '';
-
-    if (!sendFrom) return;
-
-    const user = await fetchUserSendAddresses();
-    if (!user) {
-      showToast('Failed to load sending addresses', true);
-      return;
-    }
-
-    const selectedOption = coinSelect.options[coinSelect.selectedIndex];
-    const selectedCoinSymbol = selectedOption ? selectedOption.value : null;
-    const coin = coins.find(c => (c.symbol || c.name) === selectedCoinSymbol);
-
-    if (!coin) {
-      sendToInfoDiv.textContent = 'Please select a coin first.';
-      sendToInfoDiv.style.display = 'block';
-      return;
-    }
-
-    let info = '';
-
-    if (sendFrom === 'wallet') {
-      const selectedNetwork = networkSelect.value;
-      if (coin.hasNetwork && selectedNetwork) {
-        const net = coin.networks.find(n => n.name === selectedNetwork);
-        if (net && net.walletAddress) {
-          info = `Send your coins to this wallet address:\n${net.walletAddress}`;
-        } else {
-          info = 'No wallet address found for selected network.';
-        }
-      } else {
-        if (user.walletAddress) {
-          info = `Send your coins to your wallet address:\n${user.walletAddress}`;
-        } else {
-          info = 'No wallet address found. Please add one in your profile.';
-        }
-      }
-    } else if (sendFrom === 'bybit') {
-      if (coin.payoutEmails && coin.payoutEmails.get && coin.payoutEmails.get('bybit')) {
-        info = `Send your coins to this Bybit email:\n${coin.payoutEmails.get('bybit')}`;
-      } else if (user.bybitEmail) {
-        info = `Send your coins to your Bybit email:\n${user.bybitEmail}`;
-      } else {
-        info = 'No Bybit email found. Please add one in your profile.';
-      }
-    } else if (sendFrom === 'binance') {
-      if (coin.payoutEmails && coin.payoutEmails.get && coin.payoutEmails.get('binance')) {
-        info = `Send your coins to this Binance email:\n${coin.payoutEmails.get('binance')}`;
-      } else if (user.binanceEmail) {
-        info = `Send your coins to your Binance email:\n${user.binanceEmail}`;
-      } else {
-        info = 'No Binance email found. Please add one in your profile.';
-      }
-    }
-
-    sendToInfoDiv.textContent = info;
-    sendToInfoDiv.style.display = 'block';
-  }
-
-  coinSendFromSelect.addEventListener('change', updateSendToInfo);
-  networkSelect.addEventListener('change', () => {
-    if (coinSendFromSelect.value === 'wallet') {
-      updateSendToInfo();
-    }
-  });
-
+  const sellForm = document.getElementById('sellForm');
   sellForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    if (!token) {
-      showToast('You must be logged in to sell.', true);
-      return;
-    }
+    if (submitBtn.disabled) return;
 
     const formData = new FormData(sellForm);
 
-    if (!formData.get('confirmationChecked')) {
-      showToast('Please confirm you have sent the tokens.', true);
-      return;
-    }
+    // Optionally validate inputs here again
 
-    if (!networkSelect.disabled && !formData.get('network')) {
-      showToast('Please select a network.', true);
-      return;
-    }
-
-    const payoutDestination = formData.get('payoutDestination');
-    if (!payoutDestination) {
-      showToast('Please select a payout destination.', true);
-      return;
-    }
-
-    const coinSendFrom = formData.get('coinSendFrom');
-    if (!coinSendFrom) {
-      showToast('Please select where you are sending the coins from.', true);
-      return;
-    }
-
-    if (coinSendFrom === 'bybit' || coinSendFrom === 'binance') {
-      const confirmSend = confirm(`Are you sure you want to send coins from ${coinSendFrom.charAt(0).toUpperCase() + coinSendFrom.slice(1)}?`);
-      if (!confirmSend) {
-        return;
-      }
-    }
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Submitting...';
 
     try {
-      const res = await fetch(`${apiBase}/sell`, {
+      const response = await fetch('/api/sell', {
         method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`
-        },
         body: formData,
       });
-      const data = await res.json();
 
-      if (!res.ok) throw new Error(data.message || 'Sell order failed');
+      if (!response.ok) {
+        const error = await response.json();
+        alert(`Error: ${error.message || 'Sell failed'}`);
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Sell Order';
+        return;
+      }
 
-      showToast(data.message);
-
+      alert('Sell order submitted successfully!');
       sellForm.reset();
-      payoutAmountDisplay.textContent = 'You will receive: NGN 0';
-      networkSelect.disabled = true;
-      networkSelect.innerHTML = '<option value="" disabled selected>Select network</option>';
-      bankInfoDiv.style.display = 'none';
-      bankInfoDiv.textContent = '';
-      sendToInfoDiv.style.display = 'none';
-      sendToInfoDiv.textContent = '';
-      selectedCoin = null;
-      currentPriceNGN = 0;
-
+      payoutDisplay.textContent = 'You will receive: ₦0.00';
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submit Sell Order';
     } catch (err) {
-      showToast(err.message, true);
+      alert('Network error. Please try again.');
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit Sell Order';
     }
   });
 
-  loadCoins();
+})();
 </script>
 
 </body>

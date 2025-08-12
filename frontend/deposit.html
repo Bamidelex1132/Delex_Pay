@@ -1,23 +1,106 @@
 <!-- deposit.html -->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Deposit - Delex Pay</title>
   <link rel="icon" type="image/jpg" href="./assets/images/logo.1.jpg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    body{background:#0e0f1a;color:#fff;font-family:Inter,Arial;padding:2rem;display:flex;justify-content:center;align-items:center;min-height:100vh}
-    .card{background:#1a1c2e;padding:2rem;border-radius:12px;width:360px}
-    label{display:block;margin-top:10px;color:#cbd5e1}
-    input,select,button{width:100%;padding:10px;border-radius:8px;border:none;background:#2b2d42;color:#fff}
-    button{background:#3b82f6;margin-top:12px;cursor:pointer}
-    .error{color:#f87171;margin-top:6px}
+    :root {
+      --bg: #0e0f1a;
+      --card: rgba(26, 28, 46, 0.85);
+      --border: rgba(255, 255, 255, 0.08);
+      --input-bg: rgba(43, 45, 66, 0.8);
+      --accent: #3b82f6;
+      --error: #f87171;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      background: var(--bg);
+      color: #fff;
+      font-family: "Inter", Arial, sans-serif;
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background: radial-gradient(circle at top left, rgba(59,130,246,0.12), transparent 60%),
+                  radial-gradient(circle at bottom right, rgba(16,185,129,0.08), transparent 60%),
+                  var(--bg);
+    }
+    .card {
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      border: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+    }
+    h2 {
+      text-align: center;
+      color: var(--accent);
+      font-weight: 700;
+      margin-bottom: 1.5rem;
+    }
+    label {
+      display: block;
+      margin-top: 14px;
+      margin-bottom: 6px;
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--input-bg);
+      color: #fff;
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+    input:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      font-weight: 600;
+      margin-top: 18px;
+      font-size: 15px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    button:hover {
+      background: #2563eb;
+    }
+    .note {
+      color: #cbd5e1;
+      margin-top: 8px;
+      font-size: 13px;
+    }
+    .error {
+      color: var(--error);
+      margin-top: 6px;
+      font-size: 13px;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2 style="text-align:center;color:#3b82f6">Deposit Funds</h2>
+    <h2>Deposit Funds</h2>
 
     <label for="amount">Amount</label>
     <input id="amount" type="number" placeholder="Enter amount" min="0" />
@@ -28,7 +111,7 @@
     <label for="method">Payment Method</label>
     <select id="method"><option value="bank">Bank Transfer</option></select>
 
-    <div id="min-note" style="color:#cbd5e1;margin-top:8px"></div>
+    <div id="min-note" class="note"></div>
     <div id="err" class="error"></div>
 
     <button id="continueBtn">Continue</button>
@@ -52,17 +135,17 @@ async function loadOptions(){
       currencySelect.appendChild(opt);
     });
 
-    // methods (we only support bank transfer for now)
     const methodSelect = document.getElementById('method');
     methodSelect.innerHTML = '';
     data.methods.forEach(m => {
-      const opt = document.createElement('option');
-      opt.value = m.code;
-      opt.textContent = m.name;
-      if (m.enabled) methodSelect.appendChild(opt);
+      if (m.enabled) {
+        const opt = document.createElement('option');
+        opt.value = m.code;
+        opt.textContent = m.name;
+        methodSelect.appendChild(opt);
+      }
     });
 
-    // show min-note for selected currency
     showMin(currencySelect.value);
     currencySelect.addEventListener('change', (e) => showMin(e.target.value));
   } catch (err) {
@@ -78,7 +161,7 @@ async function showMin(code){
     const info = await res.json();
     document.getElementById('min-note').textContent = `Minimum: ${info.minAmount} ${info.currency}`;
     document.getElementById('amount').min = info.minAmount || 0;
-  } catch (err) {
+  } catch {
     document.getElementById('min-note').textContent = '';
   }
 }
@@ -103,13 +186,11 @@ document.getElementById('continueBtn').addEventListener('click', (e) => {
     return;
   }
 
-  // store to localStorage and go to bank transfer page
   localStorage.setItem('depositAmount', amount);
   localStorage.setItem('depositCurrency', currency);
   localStorage.setItem('depositMethod', method);
   localStorage.setItem('depositTs', Date.now());
 
-  // redirect
   window.location.href = 'transfer.html';
 });
 

@@ -13,6 +13,6 @@ router.get('/options', depositController.getOptions);
 router.get('/:currency', depositController.getDepositInfoByCurrency);
 
 // POST route for submitting deposit
-router.post('/submit', upload.single('proof'), depositController.submitDeposit);
+router.post('/submit', uploadProof.single('proof'), depositController.submitDeposit);
 
 module.exports = router;

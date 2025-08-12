@@ -351,7 +351,20 @@
 
     loadDepositInfo();
   </script>
-  <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
-<script>eruda.init();</script>
+<script>
+window.addEventListener("error", function(event) {
+    fetch("/log-js-error", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+            message: event.message,
+            source: event.filename,
+            line: event.lineno,
+            column: event.colno,
+            stack: event.error ? event.error.stack : null
+        })
+    });
+});
+</script>
 </body>
 </html>

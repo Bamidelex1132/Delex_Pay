@@ -39,6 +39,16 @@
     font-weight: bold;
     margin-bottom: 1rem;
   }
+  .payout-option {
+    margin-bottom: 0.5rem;
+  }
+  .bank-info {
+    background: #e7f0ff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
 </style>
 </head>
 <body>
@@ -63,8 +73,18 @@
 
   <p id="payoutDisplay">You will receive: ₦0.00</p>
 
-  <label for="payoutDestination">Payout Destination (Wallet or Bank Details)</label>
-  <input type="text" id="payoutDestination" name="payoutDestination" placeholder="Enter wallet or bank details" required />
+  <fieldset>
+    <legend><strong>Payout Destination</strong></legend>
+    <div class="payout-option">
+      <input type="radio" id="walletOption" name="payoutDestination" value="wallet" />
+      <label for="walletOption">Wallet (Available balance: ₦<span id="walletBalance">0.00</span>)</label>
+    </div>
+    <div class="payout-option">
+      <input type="radio" id="bankOption" name="payoutDestination" value="bank" disabled />
+      <label for="bankOption">Bank Account</label>
+      <div id="bankInfo" class="bank-info" style="display:none;"></div>
+    </div>
+  </fieldset>
 
   <label>
     <input type="checkbox" id="confirmationChecked" name="confirmationChecked" required />
@@ -86,6 +106,9 @@
   const payoutDisplay = document.getElementById('payoutDisplay');
   const confirmationCheckbox = document.getElementById('confirmationChecked');
   const submitBtn = document.getElementById('submitBtn');
+  const walletBalanceSpan = document.getElementById('walletBalance');
+  const bankOption = document.getElementById('bankOption');
+  const bankInfoDiv = document.getElementById('bankInfo');
 
   const MARKUP_PERCENT = 5; // 5% markup on sell
 
@@ -96,6 +119,19 @@
   };
 
   let currentRateNGN = 0; // live price per coin in NGN
+
+  let userData = null;
+
+  async function fetchUserData() {
+    try {
+      const res = await fetch('/api/user/profile');
+      if (!res.ok) throw new Error('Failed to fetch user data');
+      return await res.json();
+    } catch (err) {
+      console.error(err);
+      return null;
+    }
+  }
 
   function updateNetworks(coin) {
     if (coinNetworks[coin] && coinNetworks[coin].length > 0) {
@@ -137,6 +173,39 @@
     payoutDisplay.textContent = `You will receive: ₦${totalPayout.toFixed(2)}`;
   }
 
+  function updateBankInfo() {
+    if (userData && userData.bankDetails && userData.bankDetails.bankVerified) {
+      bankInfoDiv.style.display = 'block';
+      bankInfoDiv.textContent = `
+        Bank: ${userData.bankDetails.bankName}
+        Account Name: ${userData.bankDetails.accountName}
+        Account Number: ${userData.bankDetails.accountNumber}
+      `;
+      bankOption.disabled = false;
+    } else {
+      bankInfoDiv.style.display = 'none';
+      bankOption.disabled = true;
+      if (bankOption.checked) {
+        bankOption.checked = false;
+        document.getElementById('walletOption').checked = true;
+      }
+    }
+  }
+
+  function validateForm() {
+    const coinSelected = coinSelect.value;
+    const amountVal = parseFloat(amountInput.value);
+    const payoutSelected = document.querySelector('input[name="payoutDestination"]:checked');
+    const confirmed = confirmationCheckbox.checked;
+
+    submitBtn.disabled = !(
+      coinSelected &&
+      amountVal > 0 &&
+      payoutSelected &&
+      confirmed
+    );
+  }
+
   coinSelect.addEventListener('change', async () => {
     const coin = coinSelect.value;
     updateNetworks(coin);
@@ -156,10 +225,9 @@
   });
 
   confirmationCheckbox.addEventListener('change', validateForm);
-
-  function validateForm() {
-    submitBtn.disabled = !(coinSelect.value && amountInput.value > 0 && confirmationCheckbox.checked);
-  }
+  document.querySelectorAll('input[name="payoutDestination"]').forEach(el => {
+    el.addEventListener('change', validateForm);
+  });
 
   const sellForm = document.getElementById('sellForm');
   sellForm.addEventListener('submit', async (e) => {
@@ -168,8 +236,6 @@
     if (submitBtn.disabled) return;
 
     const formData = new FormData(sellForm);
-
-    // Optionally validate inputs here again
 
     submitBtn.disabled = true;
     submitBtn.textContent = 'Submitting...';
@@ -200,6 +266,12 @@
     }
   });
 
+  // On load, fetch user data & init form
+  userData = await fetchUserData();
+  if (userData) {
+    walletBalanceSpan.textContent = userData.balance.toFixed(2);
+    updateBankInfo();
+  }
 })();
 </script>
 

@@ -118,7 +118,8 @@
   </div>
 
 <script>
-const apiBase = "https://delex-pay.onrender.com";
+
+  const apiBase = "https://delex-pay.onrender.com";
 
 async function loadOptions(){
   try {
@@ -135,17 +136,17 @@ async function loadOptions(){
       currencySelect.appendChild(opt);
     });
 
+    // methods (we only support bank transfer for now)
     const methodSelect = document.getElementById('method');
     methodSelect.innerHTML = '';
     data.methods.forEach(m => {
-      if (m.enabled) {
-        const opt = document.createElement('option');
-        opt.value = m.code;
-        opt.textContent = m.name;
-        methodSelect.appendChild(opt);
-      }
+      const opt = document.createElement('option');
+      opt.value = m.code;
+      opt.textContent = m.name;
+      if (m.enabled) methodSelect.appendChild(opt);
     });
 
+    // show min-note for selected currency
     showMin(currencySelect.value);
     currencySelect.addEventListener('change', (e) => showMin(e.target.value));
   } catch (err) {
@@ -161,7 +162,7 @@ async function showMin(code){
     const info = await res.json();
     document.getElementById('min-note').textContent = `Minimum: ${info.minAmount} ${info.currency}`;
     document.getElementById('amount').min = info.minAmount || 0;
-  } catch {
+  } catch (err) {
     document.getElementById('min-note').textContent = '';
   }
 }
@@ -186,11 +187,13 @@ document.getElementById('continueBtn').addEventListener('click', (e) => {
     return;
   }
 
+  // store to localStorage and go to bank transfer page
   localStorage.setItem('depositAmount', amount);
   localStorage.setItem('depositCurrency', currency);
   localStorage.setItem('depositMethod', method);
   localStorage.setItem('depositTs', Date.now());
 
+  // redirect
   window.location.href = 'transfer.html';
 });
 

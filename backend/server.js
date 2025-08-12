@@ -37,6 +37,8 @@ const coinRoutes = require('./routes/coinRoutes');
 const transactionRoutes = require('./routes/transaction');
 const Transaction = require('./models/Transaction');
 const sellRoutes = require('./routes/sell');
+const transferRoutes = require('./routes/transferRoutes');
+
 
 
 
@@ -66,6 +68,7 @@ app.get('/api/transactions/:id', async (req, res) => {
   }
 });
 app.use('/api', sellRoutes);
+app.use('/api/transfer', transferRoutes);
 //  Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/receipt', express.static('uploads/receipt'));

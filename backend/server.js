@@ -38,6 +38,7 @@ const transactionRoutes = require('./routes/transaction');
 const Transaction = require('./models/Transaction');
 
 
+
 //  API 
 app.use('/api/auth', authRoutes);
 app.use('/api/user', userRoutes);
@@ -63,7 +64,7 @@ app.get('/api/transactions/:id', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
-
+app.use('/api', sellRoutes);
 //  Static Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/uploads/receipt', express.static('uploads/receipt'));

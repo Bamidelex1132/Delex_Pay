@@ -36,6 +36,7 @@ const feeRoutes = require('./routes/feeRoutes');
 const coinRoutes = require('./routes/coinRoutes');
 const transactionRoutes = require('./routes/transaction');
 const Transaction = require('./models/Transaction');
+const sellRoutes = require('./routes/sell');
 
 
 

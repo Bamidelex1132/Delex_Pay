@@ -1,190 +1,132 @@
-// controllers/sellController.js
-const Transaction = require('../models/Transaction');
 const User = require('../models/User');
+const Transaction = require('../models/Transaction');
 const CoinConfig = require('../models/CoinConfig');
-const nodemailer = require('nodemailer');
 const axios = require('axios');
+const sendEmail = require('../utils/sendEmail');
 
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS,
-  },
-});
+// Fee percentage for sell transactions (5%)
+const SELL_FEE_PERCENT = 5;
 
-const discountRate = 0.95; // 5% discount on payout when selling
-
-// Helper: fetch live NGN price from CoinGecko fallback to coin config rate
-async function getLivePrice(coinSymbol) {
-  try {
-    const res = await axios.get(
-      `https://api.coingecko.com/api/v3/simple/price?ids=${coinSymbol.toLowerCase()}&vs_currencies=ngn`
-    );
-    return res.data[coinSymbol.toLowerCase()]?.ngn || null;
-  } catch (error) {
-    console.warn('Failed to fetch live price:', error.message);
-    return null;
-  }
-}
-
-// API to preview payout before submit
-const calculatePayout = async (req, res) => {
-  try {
-    let { coinSymbol, amount } = req.body;
-    if (!coinSymbol || !amount || amount <= 0) {
-      return res.status(400).json({ message: 'Invalid coin or amount.' });
-    }
-
-    coinSymbol = coinSymbol.toUpperCase();
-
-    const coin = await CoinConfig.findOne({ symbol: coinSymbol, status: 'active' });
-    if (!coin) return res.status(400).json({ message: 'Coin not found.' });
-
-    const livePrice = (await getLivePrice(coinSymbol)) || coin.rateToNaira;
-    if (!livePrice) return res.status(400).json({ message: 'Price data not available.' });
-
-    const payout = Math.round(amount * livePrice * discountRate);
-
-    res.json({ payout, pricePerCoin: livePrice * discountRate });
-  } catch (error) {
-    console.error('Calculate payout error:', error);
-    res.status(500).json({ message: 'Server error calculating payout.' });
-  }
-};
-
-// Submit sell order
-
-const submitSell = async (req, res) => {
+exports.submitSell = async (req, res) => {
   try {
     const userId = req.user._id;
-    let { coinSymbol, network, amount, payoutDestination, coinSendFrom, confirmationChecked } = req.body;
 
-    // Validate confirmation checkbox
-    const confirmed = confirmationChecked === true || confirmationChecked === 'true' || confirmationChecked === 'on';
-    if (!confirmed) {
-      return res.status(400).json({ message: 'Please confirm you have sent the tokens.' });
-    }
-
-    // Validate and parse amount
+    // Get form data
+    let { coinSymbol, network, amount, payoutDestination, confirmationChecked } = req.body;
     amount = parseFloat(amount);
+
+    // Validate required fields
+    if (!coinSymbol || !amount || !payoutDestination || !confirmationChecked) {
+      return res.status(400).json({ message: 'All fields including confirmation are required' });
+    }
+
     if (isNaN(amount) || amount <= 0) {
-      return res.status(400).json({ message: 'Invalid amount.' });
+      return res.status(400).json({ message: 'Invalid amount' });
     }
 
-    // Check required fields
-    if (!coinSymbol || !payoutDestination || !coinSendFrom) {
-      return res.status(400).json({ message: 'Please fill all required fields.' });
+    if (!['wallet', 'bank'].includes(payoutDestination)) {
+      return res.status(400).json({ message: 'Invalid payout destination' });
     }
 
-    // Check proof file uploaded
-    if (!req.file || !(req.file.location || req.file.url)) {
-      return res.status(400).json({ message: 'Proof of payment is required.' });
-    }
-    const proofUrl = req.file.location || req.file.url;
-
-    coinSymbol = coinSymbol.toUpperCase();
-
+    // Load user
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({ message: 'User not found.' });
+    if (!user) return res.status(404).json({ message: 'User not found' });
 
-    const coin = await CoinConfig.findOne({ symbol: coinSymbol, status: 'active' });
-    if (!coin) return res.status(400).json({ message: 'Coin not available for selling.' });
-
-    const livePrice = (await getLivePrice(coinSymbol)) || coin.rateToNaira;
-    if (!livePrice) return res.status(400).json({ message: `Unable to fetch price for ${coinSymbol}.` });
-
-    // Calculate payout with discount
-    const payout = Math.round(amount * livePrice * discountRate);
-
-    // Freeze NGN balance
-    if (user.balance < payout) {
-      return res.status(400).json({ message: 'Insufficient balance to cover payout.' });
-    }
-
-    user.balance -= payout;
-    user.frozenBalance = (user.frozenBalance || 0) + payout;
-    await user.save();
-
-    // Validate network if needed
-    if (coin.hasNetwork) {
-      if (!network) {
-        return res.status(400).json({ message: 'Network is required for this coin.' });
+    // Check payout destination requirements
+    if (payoutDestination === 'bank') {
+      if (!user.bankDetails || !user.bankDetails.bankVerified) {
+        return res.status(400).json({ message: 'Bank account not verified' });
       }
-      const net = coin.networks.find(n => n.name.toLowerCase() === network.toLowerCase());
-      if (!net) return res.status(400).json({ message: 'Invalid network selected for the coin.' });
     }
 
-    // Determine payout send address/email
-    let sendToAddressOrEmail = '';
-    if (coinSendFrom === 'wallet') {
-      if (coin.hasNetwork && network) {
-        const net = coin.networks.find(n => n.name.toLowerCase() === network.toLowerCase());
-        sendToAddressOrEmail = net.walletAddress;
-      } else {
-        sendToAddressOrEmail = user.walletAddress || '';
-        if (!sendToAddressOrEmail) return res.status(400).json({ message: 'No wallet address found for user.' });
+    if (payoutDestination === 'wallet') {
+      if (user.balance < amount) {
+        return res.status(400).json({ message: 'Insufficient wallet balance' });
       }
-    } else if (coinSendFrom === 'bybit') {
-      sendToAddressOrEmail = coin.payoutEmails?.get('bybit') || user.bybitEmail || '';
-      if (!sendToAddressOrEmail) return res.status(400).json({ message: 'No Bybit email configured for this coin or user.' });
-    } else if (coinSendFrom === 'binance') {
-      sendToAddressOrEmail = coin.payoutEmails?.get('binance') || user.binanceEmail || '';
-      if (!sendToAddressOrEmail) return res.status(400).json({ message: 'No Binance email configured for this coin or user.' });
-    } else {
-      return res.status(400).json({ message: 'Invalid coin send source selected.' });
     }
 
-    // Save transaction
-    const transaction = new Transaction({
+    // Get coin config
+    const coinConfig = await CoinConfig.findOne({ symbol: coinSymbol.toUpperCase(), status: 'active' });
+    if (!coinConfig) {
+      return res.status(400).json({ message: 'Unsupported or inactive coin' });
+    }
+
+    // Validate network if coin requires it
+    if (coinConfig.hasNetwork) {
+      if (!network || !coinConfig.networks.some(n => n.name === network)) {
+        return res.status(400).json({ message: 'Invalid or missing network' });
+      }
+    }
+
+    // Fetch live price from CoinGecko
+    const coinId = coinConfig.name.toLowerCase();
+    const priceResponse = await axios.get(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=ngn`
+    );
+    const livePriceNGN = priceResponse.data?.[coinId]?.ngn;
+    if (!livePriceNGN) {
+      return res.status(500).json({ message: 'Failed to fetch live coin price' });
+    }
+
+    // Calculate price per coin after fee deduction
+    const pricePerCoin = livePriceNGN * (1 - SELL_FEE_PERCENT / 100);
+    const totalNaira = pricePerCoin * amount;
+
+    // Proof upload URL (if any)
+    const proofUrl = req.file?.path || req.file?.location || '';
+
+    // Create transaction
+    const newTransaction = new Transaction({
       user: userId,
       type: 'sell',
       amount,
-      pricePerCoin: livePrice * discountRate,
-      totalValue: payout,
+      coin: coinSymbol.toUpperCase(),
+      network: network || '',
+      rate: pricePerCoin,
+      totalNaira,
       currency: 'NGN',
+      paymentDestination: payoutDestination,
       status: 'submitted',
-      description: `Sell ${amount} ${coinSymbol} via ${payoutDestination}`,
-      coinSymbol,
-      network: network || null,
-      payoutDestination,
-      coinSendFrom,
-      sendToAddressOrEmail,
+      description: `Sell order for ${amount} ${coinSymbol.toUpperCase()}`,
       proof: proofUrl,
     });
 
-    await transaction.save();
+    await newTransaction.save();
 
-    // Send emails
-    const userMailOptions = {
-      from: process.env.EMAIL_USER,
-      to: user.email,
-      subject: 'Sell order submitted',
-      text: `Hello ${user.firstName || ''},\n\nYour sell order of ${amount} ${coinSymbol} has been received and is pending approval.\n\nAmount to receive: NGN ${payout}.\nPlease send the coins to: ${sendToAddressOrEmail}\n\nThank you for using Delex Pay.`,
-    };
+    // Update user balances if payout to wallet
+    if (payoutDestination === 'wallet') {
+      user.balance -= amount;
+      user.frozenBalance += amount;
+      await user.save();
+    }
 
-    const adminMailOptions = {
-      from: process.env.EMAIL_USER,
-      to: process.env.ADMIN_EMAIL || 'admin@delexpay.com',
-      subject: 'New sell order submitted',
-      text: `User ${user.email} submitted a sell order:\n\nCoin: ${coinSymbol}\nAmount: ${amount}\nPayout: NGN ${payout}\nPayout destination: ${payoutDestination}\nSend source: ${coinSendFrom}\nSend to address/email: ${sendToAddressOrEmail}\n\nPlease review and approve the transaction.`,
-    };
+    // Send confirmation email
+    await sendEmail(
+      user.email,
+      'Sell Order Submitted - Delex Pay',
+      `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; background: #f0f4f8; border-radius: 8px;">
+        <h2 style="color: #004aad;">Sell Order Received</h2>
+        <p>Hi <strong>${user.firstName || user.email}</strong>,</p>
+        <p>Your sell order has been received and is now pending approval.</p>
+        <p><strong>Coin:</strong> ${coinSymbol.toUpperCase()}</p>
+        <p><strong>Amount:</strong> ${amount}</p>
+        <p><strong>Price per coin (NGN):</strong> ₦${pricePerCoin.toFixed(2)}</p>
+        <p><strong>Total payout (NGN):</strong> ₦${totalNaira.toFixed(2)}</p>
+        <p><strong>Payout destination:</strong> ${payoutDestination === 'wallet' ? 'Wallet balance' : 'Bank Account'}</p>
+        <hr/>
+        <p style="font-size: 12px; color: #666;">You will receive another email once your transaction is approved or rejected.</p>
+      </div>
+      `
+    );
 
-    await transporter.sendMail(userMailOptions);
-    await transporter.sendMail(adminMailOptions);
-
-    return res.status(200).json({
-      message: 'Sell order submitted successfully and pending approval.',
-      transaction,
-      sendToAddressOrEmail,
+    return res.status(201).json({
+      message: 'Sell order submitted successfully',
+      transaction: newTransaction,
     });
-  } catch (error) {
-    console.error('Sell order error:', error);
-    return res.status(500).json({ message: 'Server error while submitting sell order.' });
-  }
-};
 
-module.exports = {
-  calculatePayout,
-  submitSell,
+  } catch (error) {
+    console.error('Sell submission error:', error);
+    return res.status(500).json({ message: 'Server error while submitting sell order' });
+  }
 };

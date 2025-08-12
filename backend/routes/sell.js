@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const uploadProof = require('../middleware/uploadProof'); // your multer Cloudinary middleware
 const sellController = require('../controllers/sellController');
-const authMiddleware = require('../middleware/authMiddleware'); // your auth middleware
+const { authMiddleware } = require('../middleware/authMiddleware');
 console.log('authMiddleware:', typeof authMiddleware);
 console.log('uploadProof:', typeof uploadProof);
 console.log('sellController.submitSell:', typeof sellController?.submitSell);

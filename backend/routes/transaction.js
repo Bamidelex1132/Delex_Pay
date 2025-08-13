@@ -19,7 +19,7 @@ router.post('/create', authenticate, createTransaction);
 // ✅ Submit transaction with proof upload
 router.post(
     '/submit-transaction', 
-    authenticate, 
+     authenticateUser,
     uploadProof.single('proof'), 
     submitTransaction
 );

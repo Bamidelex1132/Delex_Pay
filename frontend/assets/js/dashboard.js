@@ -308,3 +308,17 @@ logoutBtn.addEventListener("click", async (e) => {
     logoutBtn.style.pointerEvents = "";
   }
 });
+// Catch any JS error
+window.onerror = function (message, source, lineno, colno, error) {
+    console.error("🔥 Error Message:", message);
+    console.error("📄 File:", source);
+    console.error("📍 Line:", lineno, "Column:", colno);
+    console.error("💥 Error Object:", error);
+    alert("Error: " + message + "\nCheck console for details.");
+};
+
+// Catch unhandled Promise rejections (async errors)
+window.addEventListener("unhandledrejection", function (event) {
+    console.error("❌ Unhandled Promise Rejection:", event.reason);
+    alert("Promise Error: " + event.reason);
+});

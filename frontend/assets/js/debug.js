@@ -1,5 +1,5 @@
 // debug.js
-
+alert("✅ Debug script is running");
 console.log("✅ Debug script loaded");
 
 // Catch any JavaScript errors

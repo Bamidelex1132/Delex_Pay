@@ -11,7 +11,7 @@ const {
 const { authenticate, isAdmin } = require('../middleware/authMiddleware');
 
 // ✅ Only admin can update status
-router.post('/update-status', authenticate, isAdmin, updateTransactionStatus);
+router.post('/update-status', authenticateUser, isAdmin, updateTransactionStatus);
 
 // ✅ Create a transaction (for logged-in users)
 router.post('/create', authenticate, createTransaction);
